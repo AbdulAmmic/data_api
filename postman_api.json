@@ -1,0 +1,208 @@
+{
+  "info": {
+    "name": "VTU Resell API",
+    "_postman_id": "c48a73aa-9af5-4b3d-8e44-d5e9a9cbd1a1",
+    "description": "Complete API collection for VTU/Data Resell System using Flask + VTpass integration.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"phone\": \"08012345678\"\n}"
+            },
+            "url": { "raw": "http://127.0.0.1:5000/auth/register", "protocol": "http", "host": ["127.0.0.1"], "port": "5000", "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "http://127.0.0.1:5000/auth/login", "protocol": "http", "host": ["127.0.0.1"], "port": "5000", "path": ["auth", "login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Get Profile (/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "http://127.0.0.1:5000/me", "protocol": "http", "host": ["127.0.0.1"], "port": "5000", "path": ["me"] }
+          }
+        },
+        {
+          "name": "Get Wallet Info",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "http://127.0.0.1:5000/wallet", "protocol": "http", "host": ["127.0.0.1"], "port": "5000", "path": ["wallet"] }
+          }
+        },
+        {
+          "name": "Fund Wallet (Monnify Stub)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "http://127.0.0.1:5000/wallet/fund", "protocol": "http", "host": ["127.0.0.1"], "port": "5000", "path": ["wallet", "fund"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "VTpass",
+      "item": [
+        {
+          "name": "Get All Services",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "http://127.0.0.1:5000/vtpass/services", "protocol": "http", "host": ["127.0.0.1"], "port": "5000", "path": ["vtpass", "services"] }
+          }
+        },
+        {
+          "name": "Get Service Variations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "http://127.0.0.1:5000/vtpass/variations/data-mtn",
+              "protocol": "http",
+              "host": ["127.0.0.1"],
+              "port": "5000",
+              "path": ["vtpass", "variations", "data-mtn"]
+            }
+          }
+        },
+        {
+          "name": "Buy Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"service_id\": 1,\n  \"variation_code\": \"mtn-500mb\",\n  \"phone_or_meter\": \"08012345678\"\n}"
+            },
+            "url": { "raw": "http://127.0.0.1:5000/buy", "protocol": "http", "host": ["127.0.0.1"], "port": "5000", "path": ["buy"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "List Transactions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "http://127.0.0.1:5000/transactions", "protocol": "http", "host": ["127.0.0.1"], "port": "5000", "path": ["transactions"] }
+          }
+        },
+        {
+          "name": "Get Transaction by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "http://127.0.0.1:5000/transactions/1",
+              "protocol": "http",
+              "host": ["127.0.0.1"],
+              "port": "5000",
+              "path": ["transactions", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction Receipt (PDF)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "http://127.0.0.1:5000/transactions/1/receipt",
+              "protocol": "http",
+              "host": ["127.0.0.1"],
+              "port": "5000",
+              "path": ["transactions", "1", "receipt"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "http://127.0.0.1:5000/admin/users", "protocol": "http", "host": ["127.0.0.1"], "port": "5000", "path": ["admin", "users"] }
+          }
+        },
+        {
+          "name": "Update User (balance/role)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"balance\": 5000,\n  \"role\": \"user\",\n  \"is_active\": true\n}"
+            },
+            "url": { "raw": "http://127.0.0.1:5000/admin/users/1", "protocol": "http", "host": ["127.0.0.1"], "port": "5000", "path": ["admin", "users", "1"] }
+          }
+        },
+        {
+          "name": "List Services",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "http://127.0.0.1:5000/admin/services", "protocol": "http", "host": ["127.0.0.1"], "port": "5000", "path": ["admin", "services"] }
+          }
+        },
+        {
+          "name": "Create Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"MTN Data\",\n  \"service_id\": \"data-mtn\",\n  \"category_code\": \"data\",\n  \"base_price\": 500,\n  \"reseller_price\": 520\n}"
+            },
+            "url": { "raw": "http://127.0.0.1:5000/admin/services", "protocol": "http", "host": ["127.0.0.1"], "port": "5000", "path": ["admin", "services"] }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "token", "value": "" },
+    { "key": "admin_token", "value": "" }
+  ]
+}

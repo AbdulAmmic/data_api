@@ -1,0 +1,163 @@
+{
+  "info": {
+    "_postman_id": "c8a9c7a0-9b3e-4e2f-9a8f-9c8a3f0b1234",
+    "name": "VTU Wallet API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Wallet-based VTU API (Paystack + DataStation)"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Test User\",\n  \"email\": \"test@mail.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/register" }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@mail.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallet",
+      "item": [
+        {
+          "name": "Wallet Balance",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/wallet/me" }
+          }
+        },
+        {
+          "name": "Fund Wallet (Initialize)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"amount_naira\": 1000 }"
+            },
+            "url": { "raw": "{{base_url}}/api/wallet/fund/initialize" }
+          }
+        },
+        {
+          "name": "Verify Wallet Funding",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"reference\": \"PAYSTACK_REFERENCE\" }"
+            },
+            "url": { "raw": "{{base_url}}/api/wallet/fund/verify" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "Buy Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"network\": \"mtn\",\n  \"plan\": \"1gb\",\n  \"phone\": \"08030000000\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/services/data/buy" }
+          }
+        },
+        {
+          "name": "Airtime Topup",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"network\": \"mtn\",\n  \"amount\": 100,\n  \"phone\": \"08030000000\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/services/airtime/topup" }
+          }
+        },
+        {
+          "name": "Electricity Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"disco\": \"ikeja\",\n  \"meter_number\": \"1234567890\",\n  \"meter_type\": \"prepaid\",\n  \"amount\": 2000,\n  \"phone\": \"08030000000\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/services/electricity/pay" }
+          }
+        },
+        {
+          "name": "Cable Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cable_name\": \"dstv\",\n  \"smart_card_number\": \"1234567890\",\n  \"package\": \"compact\",\n  \"amount\": 6500\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/services/cable/subscribe" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Reconcile Transactions",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/api/admin/reconcile" }
+          }
+        }
+      ]
+    }
+  ]
+}
