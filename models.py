@@ -13,7 +13,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
+    paystack_customer_code = db.Column(db.String(64), nullable=True, index=True)
     wallet_balance_kobo = db.Column(db.BigInteger, default=0)  # store in kobo for accuracy
 
     def set_password(self, raw: str):
@@ -66,6 +66,34 @@ class UserRole(db.Model):
     __tablename__ = "user_roles"
     user_id = db.Column(db.String(64), db.ForeignKey("users.id"), primary_key=True)
     role_id = db.Column(db.String(32), db.ForeignKey("roles.id"), primary_key=True)
+
+class UserDedicatedAccount(db.Model):
+    __tablename__ = "user_dedicated_accounts"
+
+    id = db.Column(db.String(64), primary_key=True)
+
+    user_id = db.Column(
+        db.String(64),
+        db.ForeignKey("users.id"),
+        nullable=False,
+        unique=True,   # ONE account per user
+        index=True
+    )
+
+    provider = db.Column(db.String(20), default="PAYSTACK")
+
+    # Paystack identifiers
+    paystack_customer_code = db.Column(db.String(64), nullable=False, index=True)
+    paystack_dedicated_account_id = db.Column(db.String(64), nullable=False, index=True)
+
+    # Bank details
+    account_number = db.Column(db.String(20), nullable=False, index=True)
+    account_name = db.Column(db.String(120), nullable=False)
+    bank_name = db.Column(db.String(80), nullable=False)
+    bank_slug = db.Column(db.String(40), nullable=False)
+    reference = db.Column(db.String(100), nullable=False, unique=True)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # ---- Pricing ----
 class PriceItem(db.Model):
