@@ -9,7 +9,20 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__)
-    CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS", "PUT", "DELETE"], "allow_headers": "*"}}) 
+    CORS(app) # Fallback
+
+    # Manual CORS Injection to bypass any proxy stripping issues
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        return response
+    
+    # Catch-all OPTIONS to bypass 404s
+    @app.route('/<path:path>', methods=['OPTIONS'])
+    def handle_options(path):
+        return '', 200 
 
   
     app.config["SECRET_KEY"] = os.getenv("APP_SECRET_KEY", "dev_secret")
