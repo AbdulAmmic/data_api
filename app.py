@@ -9,7 +9,7 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__)
-    CORS(app, resources={r"/*": {"origins": "*"}})
+    CORS(app) # Allow all origins by default
 
     # Core config
     app.config["SECRET_KEY"] = os.getenv("APP_SECRET_KEY", "dev_secret")
