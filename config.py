@@ -26,7 +26,15 @@ class Config:
     VT_PASS_API_KEY = os.getenv("VT_PASS_API_KEY")
     VT_PASS_PUBLIC_KEY = os.getenv("VT_PASS_PUBLIC_KEY")
     VT_PASS_SECRET_KEY = os.getenv("VT_PASS_SECRET_KEY")
+    VT_PASS_SECRET_KEY = os.getenv("VT_PASS_SECRET_KEY")
     VT_PASS_BASE_URL = os.getenv("VT_PASS_BASE_URL", "https://sandbox.vtpass.com/api/")
+
+    # -----------------------------
+    # GAFIAPAY CONFIG
+    # -----------------------------
+    GAFIAPAY_API_KEY = os.getenv("GAFIAPAY_API_KEY")
+    GAFIAPAY_SECRET_KEY = os.getenv("GAFIAPAY_SECRET_KEY")
+    GAFIAPAY_BASE_URL = os.getenv("GAFIAPAY_BASE_URL", "https://api.gafiapay.com/api/v1/external")
 
     # -----------------------------
     # WALLET SETTINGS

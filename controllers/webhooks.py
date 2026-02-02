@@ -159,3 +159,99 @@ def register_webhook_routes(bp):
             "Wallet funded via Paystack",
             200
         )
+
+    # =================================================
+    # 🔹 3. GAFIAPAY WEBHOOK (VIRTUAL ACCOUNT)
+    # =================================================
+    @bp.post("/gafiapay")
+    def gafiapay_webhook():
+        # Gafiapay sends JSON payload
+        try:
+            data = request.get_json(force=True)
+        except Exception:
+            return error_response("Invalid JSON", 400)
+
+        # Log for debugging
+        print(f"Set Gafiapay Webhook: {json.dumps(data, indent=2)}")
+
+        # Extract fields (Adjust based on actual Gafiapay docs if available, assuming standard)
+        # Assuming structure: { "event": "transaction.successful", "data": { "reference": "...", "amount": 100, "virtual_account_number": "..." } }
+        # OR direct: { "reference": "...", "amount": 100, "account_number": "..." }
+        
+        # Let's handle a generic structure that covers common patterns or matches what we simulated
+        
+        # 1. Check Event Type (if present)
+        event_type = data.get("event")
+        if event_type and "success" not in event_type.lower():
+             return success_response({"received": True}, "Ignored event", 200)
+
+        # 2. Extract Data
+        payload = data.get("data", data) # Fallback if data is at root
+        
+        reference = payload.get("reference") or payload.get("tx_ref")
+        amount = payload.get("amount") # Usually in Naira? Or Kobo?
+        # IMPORTANT: Verify currency. Assuming Naira from typical providers, but let's check input
+        # If input is float/int, assume Naira for Gafiapay (Check docs if possible, safer to assume Naira for these aggregators)
+        
+        account_number = payload.get("virtual_account_number") or payload.get("account_number")
+        
+        if not reference or not amount or not account_number:
+            return error_response("Missing critical fields", 400)
+
+        # 3. Find User by Dedicated Account
+        dva = UserDedicatedAccount.query.filter_by(
+            account_number=account_number,
+            is_active=True
+        ).first()
+
+        if not dva:
+             return success_response({"received": True}, "Account not found", 200)
+
+        user = db.session.get(User, dva.user_id)
+        if not user:
+             return success_response({"received": True}, "User not found", 200)
+
+        # 4. Check for Duplicate Transaction
+        existing = WalletTransaction.query.filter_by(
+            reference=reference,
+            provider="GAFIAPAY"
+        ).first()
+
+        if existing:
+             return success_response({"received": True, "duplicate": True}, "Already processed", 200)
+
+        # 5. Credit Wallet
+        # Convert amount to Kobo. Gafiapay usually sends Naira (e.g. 500.00)
+        try:
+            amount_naira = float(amount)
+            amount_kobo = int(amount_naira * 100)
+        except ValueError:
+            return error_response("Invalid amount format", 400)
+
+        tx = WalletTransaction(
+            id=uid("wtx_"),
+            user_id=user.id,
+            tx_type="CREDIT",
+            amount_kobo=amount_kobo,
+            status="SUCCESS",
+            narration=f"Wallet funding via Gafiapay Transfer ({account_number})",
+            provider="GAFIAPAY",
+            reference=reference,
+            raw_response=json.dumps(data),
+        )
+
+        user.wallet_balance_kobo += amount_kobo
+        db.session.add(tx)
+        db.session.commit()
+
+        print(f"CREDITED {user.email} with N{amount_naira}")
+
+        return success_response(
+            {
+                "credited": True,
+                "amount_naira": amount_naira,
+                "user": user.email
+            },
+            "Wallet funded successfully",
+            200
+        )

@@ -16,11 +16,74 @@ def register_wallet_routes(bp):
     def wallet_me():
         user = request.user
         balance = user.wallet_balance_kobo or 0
+        
+        # Fetch active dedicated account
+        acct = UserDedicatedAccount.query.filter_by(user_id=user.id, is_active=True).first()
+        virtual_account = None
+        if acct:
+            virtual_account = {
+                "bank_name": acct.bank_name,
+                "account_number": acct.account_number,
+                "account_name": acct.account_name,
+                "provider": acct.provider
+            }
+
         return success_response({
             "user_id": user.id,
             "balance_kobo": balance,
             "balance_naira": kobo_to_naira(balance),
+            "has_pin": user.has_pin,
+            "virtual_account": virtual_account
         })
+
+    @bp.post("/dedicated-account/gafia")
+    @auth_required
+    def create_gafia_account():
+        user = request.user
+        
+        # Check if already exists
+        existing = UserDedicatedAccount.query.filter_by(user_id=user.id, is_active=True).first()
+        if existing:
+            return success_response({
+                "account_number": existing.account_number,
+                "bank_name": existing.bank_name,
+                "account_name": existing.account_name
+            }, "Account already exists")
+
+        # Call Gafiapay
+        try:
+            from utils.gafiapay import generate_virtual_account
+            
+            status, g_data = generate_virtual_account(user.full_name, user.email, user.phone)
+            
+            if status in [200, 201] and g_data.get("status") == "success":
+                acct_data = g_data.get("data", {})
+                
+                # Create dedicated account record
+                new_account = UserDedicatedAccount(
+                    id=uid("gaf_"),
+                    user_id=user.id,
+                    provider="GAFIAPAY",
+                    account_number=str(acct_data.get("accountNumber", "")),
+                    account_name=acct_data.get("accountName", user.full_name),
+                    bank_name=acct_data.get("bankName", "Virtual Bank"),
+                    bank_slug="gafiapay-virtual",
+                    reference=uid("ref_"),
+                    is_active=True
+                )
+                db.session.add(new_account)
+                db.session.commit()
+                
+                return success_response({
+                    "account_number": new_account.account_number,
+                    "bank_name": new_account.bank_name,
+                    "account_name": new_account.account_name
+                }, "Account created successfully", 201)
+            else:
+                return error_response(f"Provider error: {g_data.get('message', 'Failed to generate')}", 502, g_data)
+                
+        except Exception as e:
+            return error_response(f"Generation failed: {str(e)}", 500)
 
     # -------------------------------------------------
     # INITIALIZE PAYSTACK FUNDING

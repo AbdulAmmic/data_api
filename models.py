@@ -14,13 +14,43 @@ class User(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     paystack_customer_code = db.Column(db.String(64), nullable=True, index=True)
-    wallet_balance_kobo = db.Column(db.BigInteger, default=0)  # store in kobo for accuracy
+    wallet_balance_kobo = db.Column(db.BigInteger, default=0)
+    transaction_pin_hash = db.Column(db.String(255), nullable=True)
 
     def set_password(self, raw: str):
         self.password_hash = generate_password_hash(raw)
 
     def check_password(self, raw: str) -> bool:
         return check_password_hash(self.password_hash, raw)
+
+    def set_pin(self, raw: str):
+        self.transaction_pin_hash = generate_password_hash(raw)
+
+    def check_pin(self, raw: str) -> bool:
+        if not self.transaction_pin_hash or not raw:
+            return False
+        return check_password_hash(self.transaction_pin_hash, raw)
+
+    @property
+    def has_pin(self):
+        return bool(self.transaction_pin_hash)
+
+class AirtimeToCashTransaction(db.Model):
+    __tablename__ = "airtime_to_cash"
+    id = db.Column(db.String(64), primary_key=True)
+    user_id = db.Column(db.String(64), db.ForeignKey("users.id"), nullable=False)
+    
+    network = db.Column(db.String(20), nullable=False)
+    phone_from = db.Column(db.String(20), nullable=False)
+    amount_sent = db.Column(db.BigInteger, nullable=False) # In Naira (user input) usually, or kobo? Let's use Kobo to be consistent but usually user types Naira.
+    # Let's verify usage. Input usually Naira. We store Kobo.
+    amount_kobo = db.Column(db.BigInteger, nullable=False)
+    
+    share_pin = db.Column(db.String(10), nullable=True) # If they share it
+    status = db.Column(db.String(20), default="PENDING") # PENDING, APPROVED, REJECTED
+    admin_note = db.Column(db.String(255), nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class WalletTransaction(db.Model):
     __tablename__ = "wallet_transactions"
@@ -71,27 +101,21 @@ class UserDedicatedAccount(db.Model):
     __tablename__ = "user_dedicated_accounts"
 
     id = db.Column(db.String(64), primary_key=True)
+    user_id = db.Column(db.String(64), db.ForeignKey("users.id"), nullable=False)
 
-    user_id = db.Column(
-        db.String(64),
-        db.ForeignKey("users.id"),
-        nullable=False,
-        unique=True,   # ONE account per user
-        index=True
-    )
+    provider = db.Column(db.String(20), nullable=False)  # PAYSTACK | MONNIFY
 
-    provider = db.Column(db.String(20), default="PAYSTACK")
+    # Paystack-specific (MAKE NULLABLE)
+    paystack_customer_code = db.Column(db.String(120), nullable=True)
+    paystack_dedicated_account_id = db.Column(db.String(120), nullable=True)
 
-    # Paystack identifiers
-    paystack_customer_code = db.Column(db.String(64), nullable=False, index=True)
-    paystack_dedicated_account_id = db.Column(db.String(64), nullable=False, index=True)
-
-    # Bank details
-    account_number = db.Column(db.String(20), nullable=False, index=True)
+    # Common fields
+    account_number = db.Column(db.String(20), nullable=False, unique=True)
     account_name = db.Column(db.String(120), nullable=False)
-    bank_name = db.Column(db.String(80), nullable=False)
-    bank_slug = db.Column(db.String(40), nullable=False)
-    reference = db.Column(db.String(100), nullable=False, unique=True)
+    bank_name = db.Column(db.String(120), nullable=False)
+    bank_slug = db.Column(db.String(50), nullable=True)
+
+    reference = db.Column(db.String(120), unique=True)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

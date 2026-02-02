@@ -4,3 +4,4 @@ PyJWT
 Werkzeug
 requests
 python-dotenv
+flask-cors
