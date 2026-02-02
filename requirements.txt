@@ -4,4 +4,6 @@ PyJWT
 Werkzeug
 requests
 python-dotenv
+gunicorn
+uvicorn
 flask-cors
