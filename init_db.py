@@ -1,6 +1,5 @@
 from app import app, db
-from app import app, db
-from models import User, WalletTransaction, ServicePurchase, UserDedicatedAccount, PriceItem, AirtimeToCashTransaction
+from models import User, WalletTransaction, AirtimeToCashTransaction, ServicePurchase, Role, UserRole, UserDedicatedAccount, PriceItem
 
 with app.app_context():
     try:
