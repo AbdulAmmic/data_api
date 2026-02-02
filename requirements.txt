@@ -7,4 +7,4 @@ python-dotenv
 gunicorn
 uvicorn
 flask-cors
-pycopg2
+psycopg2-binary
