@@ -67,7 +67,8 @@ def create_app():
 
     @app.get("/health")
     def health():
-        return {"ok": True, "service": "vtu-wallet-api"}
+        routes = [str(p) for p in app.url_map.iter_rules()]
+        return {"ok": True, "service": "vtu-wallet-api", "routes": routes}
 
     return app
 
