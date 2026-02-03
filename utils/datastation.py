@@ -15,7 +15,7 @@ def _headers():
     
     # Fallback/Hotfix: Use the specific token provided if env is missing or default
     if not token or len(token) < 10:
-        token = "22c1feb98f938274ce06c79cba0933f53363c96d"
+        token = "6b411542356bae7b3f4feb8c31c4f600a2eaf235"
 
     # Ensure prefix
     if not token.startswith("Token ") and not token.startswith("Bearer "):
