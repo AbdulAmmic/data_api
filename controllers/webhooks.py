@@ -180,23 +180,44 @@ def register_webhook_routes(bp):
         
         # Let's handle a generic structure that covers common patterns or matches what we simulated
         
-        # 1. Check Event Type (if present)
-        event_type = data.get("event")
-        if event_type and "success" not in event_type.lower():
-             return success_response({"received": True}, "Ignored event", 200)
+        # 1. Check Event Type
+        event_type = data.get("event", "").lower()
+        if "payment.received" not in event_type and "success" not in event_type:
+             return success_response({"received": True}, f"Ignored event: {event_type}", 200)
 
         # 2. Extract Data
-        payload = data.get("data", data) # Fallback if data is at root
+        # Support both structures: Nested 'transaction' (from logs) and flat (legacy/documented?)
         
-        reference = payload.get("reference") or payload.get("tx_ref")
-        amount = payload.get("amount") # Usually in Naira? Or Kobo?
-        # IMPORTANT: Verify currency. Assuming Naira from typical providers, but let's check input
-        # If input is float/int, assume Naira for Gafiapay (Check docs if possible, safer to assume Naira for these aggregators)
+        payload = data.get("data", {})
+        transaction = payload.get("transaction", {})
         
-        account_number = payload.get("virtual_account_number") or payload.get("account_number")
+        # Dictionary to hold extracted values
+        vals = {
+            "ref": None,
+            "amt": None,
+            "acct": None
+        }
+
+        if transaction:
+            # Struct: data -> transaction -> metadata -> virtualAccountNo
+            vals["ref"] = transaction.get("orderNo") or transaction.get("id")
+            vals["amt"] = transaction.get("amount")
+            meta = transaction.get("metadata", {})
+            vals["acct"] = meta.get("virtualAccountNo") or meta.get("virtualAccountNo", "")
+        else:
+            # Fallback to flat/direct structure
+            target = payload if payload else data
+            vals["ref"] = target.get("reference") or target.get("tx_ref")
+            vals["amt"] = target.get("amount")
+            vals["acct"] = target.get("virtual_account_number") or target.get("account_number")
+        
+        reference = vals["ref"]
+        amount = vals["amt"]
+        account_number = vals["acct"]
         
         if not reference or not amount or not account_number:
-            return error_response("Missing critical fields", 400)
+            print(f"Missing fields: ref={reference}, amt={amount}, acct={account_number}")
+            return success_response({"received": True}, "Missing critical fields", 200)
 
         # 3. Find User by Dedicated Account
         dva = UserDedicatedAccount.query.filter_by(
