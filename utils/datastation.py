@@ -15,7 +15,7 @@ def _headers():
     
     # Fallback/Hotfix: Use the specific token provided if env is missing or default
     if not token or len(token) < 10:
-        token = "6b411542356bae7b3f4feb8c31c4f600a2eaf235"
+        token = "9269ea4cbabe84c94ea5bf41db03f09a924f0f47"
 
     # Ensure prefix
     if not token.startswith("Token ") and not token.startswith("Bearer "):
@@ -41,7 +41,7 @@ def buy_data(payload: dict):
     """
     POST /api/data/
     Payload depends on your plan structure. Example keys often include:
-      network, plan, phone, reference
+      network, plan, mobile_number, Ported_number, reference
     """
     url = f"{_base()}/api/data/"
     r = requests.post(url, json=payload, headers=_headers(), timeout=30)

@@ -437,7 +437,8 @@ def register_service_routes(bp):
         payload = {
             "network": plan_config["datastation_network_id"], # Send mapped ID
             "plan": plan_config["datastation_plan_id"],      # Send mapped ID
-            "phone": phone,
+            "mobile_number": phone,
+            "Ported_number": True,
             "reference": uid("ref_")
         }
 
