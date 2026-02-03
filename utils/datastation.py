@@ -12,6 +12,15 @@ def _headers():
     - "Token xxxxx"
     """
     token = (current_app.config.get("DATASTATION_TOKEN") or "").strip()
+    
+    # Fallback/Hotfix: Use the specific token provided if env is missing or default
+    if not token or len(token) < 10:
+        token = "22c1feb98f938274ce06c79cba0933f53363c96d"
+
+    # Ensure prefix
+    if not token.startswith("Token ") and not token.startswith("Bearer "):
+        token = f"Token {token}"
+
     return {
         "Authorization": token,
         "Content-Type": "application/json",
