@@ -163,8 +163,8 @@ def generate_airtime_pin(network: int, network_amount: int, quantity: int, name_
     r = requests.post(url, json=payload, headers=_headers(), timeout=30)
     return r.status_code, r.text
 
-def generate_epin(exam_name: str, quantity: int):
+def generate_epin(payload: dict):
     url = f"{_base()}/api/epin/"
-    payload = {"exam_name": exam_name, "quantity": quantity}
+    # payload expected: exam_name, quantity
     r = requests.post(url, json=payload, headers=_headers(), timeout=30)
     return r.status_code, r.text

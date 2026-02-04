@@ -12,27 +12,21 @@ def seed_prices():
         PriceItem.query.delete()
         
         plans = [
-            # DATA - MTN
-            {"service": "DATA", "provider_code": "mtn_sme-1gb", "cost": 350, "markup": 0},
-            {"service": "DATA", "provider_code": "mtn_sme-2gb", "cost": 700, "markup": 0},
-            {"service": "DATA", "provider_code": "mtn_sme-3gb", "cost": 950, "markup": 0},
-             {"service": "DATA", "provider_code": "mtn_sme-5gb", "cost": 1500, "markup": 0},
+            # AIRTIME (Generic for VTU)
+            # These act as flags to enable airtime for the network.
+            # Cost is 0 (ignored), Markup is 0 (sold at face value).
+            # If you want to give discounts, set markup_type="PERCENT" and markup_value=-2.0 (for 2% discount)
+            {"service": "AIRTIME", "provider_code": "mtn", "cost": 0, "markup": 0},
+            {"service": "AIRTIME", "provider_code": "glo", "cost": 0, "markup": 0},
+            {"service": "AIRTIME", "provider_code": "airtel", "cost": 0, "markup": 0},
+            {"service": "AIRTIME", "provider_code": "9mobile", "cost": 0, "markup": 0},
             
-            # DATA - AIRTEL
-             {"service": "DATA", "provider_code": "airtel_sme-1gb", "cost": 380, "markup": 0},
-             {"service": "DATA", "provider_code": "airtel_sme-2gb", "cost": 760, "markup": 0},
-             
-            # DATA - GLO
-             {"service": "DATA", "provider_code": "glo_sme-1gb", "cost": 360, "markup": 0},
-             
-             # EPIN
-             {"service": "EPIN", "provider_code": "waec", "cost": 3500, "markup": 0},
-             {"service": "EPIN", "provider_code": "neco", "cost": 1200, "markup": 0},
-             
-             # CABLE
-             {"service": "CABLE", "provider_code": "dstv_compact", "cost": 12500, "markup": 0},
-             {"service": "CABLE", "provider_code": "dstv_premium", "cost": 21000, "markup": 0},
-             {"service": "CABLE", "provider_code": "gotv_max", "cost": 4150, "markup": 0},
+            # AIRTIME PIN (Example denominations)
+            # This logic still uses DB. If you want to use PINs, uncomment/add more.
+            # {"service": "AIRTIME_PIN", "provider_code": "mtn_100", "cost": 98, "markup": 2}, # Sell at 100
+            
+            # Note: DATA, CABLE, ELECTRICITY, EPIN are now managed via config files in /plans directory.
+            # They are NOT seeded here anymore.
         ]
 
         for p in plans:

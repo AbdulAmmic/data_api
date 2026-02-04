@@ -1,0 +1,240 @@
+[
+    {
+        "id": "gotv-max-2",
+        "cable_id": "1",
+        "package_id": "2",
+        "name": "GOtv Max",
+        "amount": 8550.0
+    },
+    {
+        "id": "dstv-yanga-6",
+        "cable_id": "2",
+        "package_id": "6",
+        "name": "DStv Yanga",
+        "amount": 6050.0
+    },
+    {
+        "id": "dstv-compact-7",
+        "cable_id": "2",
+        "package_id": "7",
+        "name": "DStv Compact",
+        "amount": 19050.0
+    },
+    {
+        "id": "dstv-compact-plus-8",
+        "cable_id": "2",
+        "package_id": "8",
+        "name": "DStv Compact Plus",
+        "amount": 30050.0
+    },
+    {
+        "id": "dstv-premium-9",
+        "cable_id": "2",
+        "package_id": "9",
+        "name": "DStv Premium",
+        "amount": 44550.0
+    },
+    {
+        "id": "classic--6000-naira---1-month-11",
+        "cable_id": "3",
+        "package_id": "11",
+        "name": "Classic -6000 Naira - 1 Month",
+        "amount": 6050.0
+    },
+    {
+        "id": "smart---5100-naira---1-month-13",
+        "cable_id": "3",
+        "package_id": "13",
+        "name": "Smart - 5100 Naira - 1 Month",
+        "amount": 5150.0
+    },
+    {
+        "id": "nova---2100-naira---1-month-14",
+        "cable_id": "3",
+        "package_id": "14",
+        "name": "Nova - 2100 Naira - 1 Month",
+        "amount": 2150.0
+    },
+    {
+        "id": "super---9800-naira---1-month-15",
+        "cable_id": "3",
+        "package_id": "15",
+        "name": "Super - 9800 Naira - 1 Month",
+        "amount": 9850.0
+    },
+    {
+        "id": "gotv-jinja-16",
+        "cable_id": "1",
+        "package_id": "16",
+        "name": "GOtv Jinja",
+        "amount": 3950.0
+    },
+    {
+        "id": "gotv-jolli-17",
+        "cable_id": "1",
+        "package_id": "17",
+        "name": "GOtv Jolli",
+        "amount": 5850.0
+    },
+    {
+        "id": "dstv-confam-19",
+        "cable_id": "2",
+        "package_id": "19",
+        "name": "DStv Confam",
+        "amount": 11050.0
+    },
+    {
+        "id": "dstv-padi-20",
+        "cable_id": "2",
+        "package_id": "20",
+        "name": "DStv Padi",
+        "amount": 4450.0
+    },
+    {
+        "id": "dstv-great-wall-standalone-21",
+        "cable_id": "2",
+        "package_id": "21",
+        "name": "DStv Great Wall Standalone",
+        "amount": 3850.0
+    },
+    {
+        "id": "dstv-premium-french-24",
+        "cable_id": "2",
+        "package_id": "24",
+        "name": "DStv Premium French",
+        "amount": 69050.0
+    },
+    {
+        "id": "dstv-premium-asia-25",
+        "cable_id": "2",
+        "package_id": "25",
+        "name": "DStv Premium Asia",
+        "amount": 50550.0
+    },
+    {
+        "id": "dstv-confam-plus-extraview-26",
+        "cable_id": "2",
+        "package_id": "26",
+        "name": "DStv Confam + ExtraView",
+        "amount": 17050.0
+    },
+    {
+        "id": "dstv-yanga-plus-extraview-27",
+        "cable_id": "2",
+        "package_id": "27",
+        "name": "DStv Yanga + ExtraView",
+        "amount": 12050.0
+    },
+    {
+        "id": "dstv-padi-plus-extraview-28",
+        "cable_id": "2",
+        "package_id": "28",
+        "name": "DStv Padi + ExtraView",
+        "amount": 10450.0
+    },
+    {
+        "id": "dstv-compact-plus-extra-view-29",
+        "cable_id": "2",
+        "package_id": "29",
+        "name": "DStv Compact + Extra View",
+        "amount": 25050.0
+    },
+    {
+        "id": "dstv-premium-plus-extra-view-30",
+        "cable_id": "2",
+        "package_id": "30",
+        "name": "DStv Premium + Extra View",
+        "amount": 50550.0
+    },
+    {
+        "id": "dstv-compact-plus---extra-view-31",
+        "cable_id": "2",
+        "package_id": "31",
+        "name": "DStv Compact Plus - Extra View",
+        "amount": 36050.0
+    },
+    {
+        "id": "extraview-access-33",
+        "cable_id": "2",
+        "package_id": "33",
+        "name": "ExtraView Access",
+        "amount": 6050.0
+    },
+    {
+        "id": "gotv-smallie---monthly-34",
+        "cable_id": "1",
+        "package_id": "34",
+        "name": "GOtv Smallie - Monthly",
+        "amount": 1950.0
+    },
+    {
+        "id": "gotv-smallie---quarterly-35",
+        "cable_id": "1",
+        "package_id": "35",
+        "name": "GOtv Smallie - Quarterly",
+        "amount": 5150.0
+    },
+    {
+        "id": "gotv-smallie---yearly-36",
+        "cable_id": "1",
+        "package_id": "36",
+        "name": "GOtv Smallie - Yearly",
+        "amount": 15050.0
+    },
+    {
+        "id": "nova---700-naira---1-week-37",
+        "cable_id": "3",
+        "package_id": "37",
+        "name": "Nova - 700 Naira - 1 Week",
+        "amount": 750.0
+    },
+    {
+        "id": "basic---1100-naira---1-week-38",
+        "cable_id": "3",
+        "package_id": "38",
+        "name": "Basic - 1100 Naira - 1 Week",
+        "amount": 1450.0
+    },
+    {
+        "id": "smart---1700-naira---1-week-39",
+        "cable_id": "3",
+        "package_id": "39",
+        "name": "Smart - 1700 Naira - 1 Week",
+        "amount": 1750.0
+    },
+    {
+        "id": "classic---2000-naira---1-week-40",
+        "cable_id": "3",
+        "package_id": "40",
+        "name": "Classic - 2000 Naira - 1 Week",
+        "amount": 2050.0
+    },
+    {
+        "id": "super---3300-naira---1-week-41",
+        "cable_id": "3",
+        "package_id": "41",
+        "name": "Super - 3300 Naira - 1 Week",
+        "amount": 3350.0
+    },
+    {
+        "id": "supa-plus---16800-naira---1-month-47",
+        "cable_id": "1",
+        "package_id": "47",
+        "name": "Supa plus - 16800 Naira - 1 Month",
+        "amount": 16850.0
+    },
+    {
+        "id": "gotv-supa---monthly-48",
+        "cable_id": "1",
+        "package_id": "48",
+        "name": "GOtv Supa - monthly",
+        "amount": 11450.0
+    },
+    {
+        "id": "basic---3300---1-month-49",
+        "cable_id": "3",
+        "package_id": "49",
+        "name": "Basic - 3300 - 1 Month",
+        "amount": 3350.0
+    }
+]

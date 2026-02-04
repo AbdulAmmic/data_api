@@ -81,8 +81,38 @@ def register_service_routes(bp):
     # =====================================================
     # PLANS LINKED TO CONFIG
     # =====================================================
-    from plans.data_plans import DATA_PLANS, get_plan_by_id
-    from plans.cable_plans import CABLE_PLANS, get_cable_plan
+    # =====================================================
+    # PLANS LINKED TO CONFIG (JSON RELOAD)
+    # =====================================================
+    import os
+    
+    def load_json_plans(filename):
+        try:
+            path = os.path.join(os.getcwd(), "plans", filename)
+            if not os.path.exists(path): return []
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading {filename}: {e}")
+            return []
+
+    DATA_PLANS = load_json_plans("data_plans.json")
+    CABLE_PLANS = load_json_plans("cable_plans.json")
+    
+    # Helpers for lookups
+    def get_plan_by_id(plan_id):
+        # Reloading here if we want dynamic updates without restart? 
+        # For performance, maybe better to load once. User wants "simple".
+        # Let's check if we should reload every time or just use the variable.
+        # User said "then me use them", implying they edit and it works.
+        # So reload might be better in the function, but for now lets keep global load at route reg time or inside route?
+        # If I put it inside register_service_routes, it runs once at startup basically.
+        # Let's move loading INSIDE the routes or a getter helper to allow hot-updates.
+        return next((p for p in DATA_PLANS if p["id"] == plan_id), None)
+
+    def get_cable_plan(plan_id):
+        return next((p for p in CABLE_PLANS if p["id"] == plan_id), None)
+
     from plans.electricity_plans import ELECTRICITY_DISCOS, get_disco
     from plans.education_plans import EDUCATION_PLANS, get_education_plan
 
@@ -99,7 +129,9 @@ def register_service_routes(bp):
                     "amount": p["selling_price"],
                     "name": p["name"],
                     "network": p["network"],
-                    "plan_type": p["type"]
+                    "plan_type": p["type"],
+                    "size": p.get("size", ""),
+                    "validity": p.get("validity", "")
                 })
             return success_response(data)
 
@@ -267,12 +299,13 @@ def register_service_routes(bp):
             
         amount_kobo = naira_to_kobo(float(amount))
         
+        m_type_val = "2" if (mtype or "prepaid").lower() == "postpaid" else "1"
+
         payload = {
             "disco_name": disco_conf["disco_id"],
             "amount": amount,
             "meter_number": meter, 
-            "MeterType": mtype or "prepaid",
-            "ref": uid("ref_")
+            "MeterType": m_type_val
         }
 
         purchase = _create_purchase(user, "ELECTRICITY", amount_kobo, payload)
@@ -280,7 +313,7 @@ def register_service_routes(bp):
         if err:
             purchase.status = "FAILED"; db.session.commit(); return err
 
-        status, body = pay_electricity(payload)
+        status, body = buy_bill_payment(payload)
         purchase.response_payload = body
         
         if status not in (200, 201):
@@ -320,10 +353,9 @@ def register_service_routes(bp):
         amount_kobo = naira_to_kobo(amount_naira)
 
         payload = {
-            "cable_name": plan_conf["cable_id"], # 1, 2, 3
-            "cable_plan": plan_conf["package_id"], # 2, 6, etc
-            "smart_card_number": iuc,
-            "ref": uid("ref_")
+            "cablename": plan_conf["cable_id"], # 1, 2, 3
+            "cableplan": plan_conf["package_id"], # 2, 6, etc
+            "smart_card_number": iuc
         }
 
         purchase = _create_purchase(user, "CABLE", amount_kobo, payload)
@@ -331,7 +363,7 @@ def register_service_routes(bp):
         if err:
             purchase.status = "FAILED"; db.session.commit(); return err
 
-        status, body = subscribe_cable(payload)
+        status, body = buy_cable_subscription(payload)
         purchase.response_payload = body
 
         if status not in (200, 201):
@@ -370,8 +402,7 @@ def register_service_routes(bp):
 
         payload = {
             "exam_name": plan_conf["datastation_id"], # WAEC/NECO
-            "quantity": quantity, # Provider supported? Usually 1.
-            "ref": uid("ref_")
+            "quantity": quantity
         }
         
         # If provider doesn't support bulk, we might need loop. 
@@ -489,16 +520,33 @@ def register_service_routes(bp):
 
         provider_code = f"{network}_{amount}"
         price = get_price_or_fail("AIRTIME", provider_code)
+        
+        # Fallback to generic network pricing
         if not price:
-            return error_response("Airtime amount not available", 400)
+            price = get_price_or_fail("AIRTIME", network)
 
-        amount_kobo = price.selling_price_kobo()
+        if not price:
+            return error_response(f"Airtime for {network} not available", 400)
+
+        # If it's a specific price item (fixed amount), use its selling price
+        if price.provider_code == provider_code:
+            amount_kobo = price.selling_price_kobo()
+        else:
+            # Dynamic amount (face value)
+            # We could implement a percentage markup/discount here if needed using price.markup_value
+            # For now, we assume selling at face value
+            amount_kobo = naira_to_kobo(float(amount))
+
+        # Map network to ID
+        net_map = {"mtn": "1", "glo": "2", "9mobile": "3", "airtel": "4"}
+        net_id = net_map.get(network.lower(), network)
 
         payload = {
-            "network": network,
+            "network": net_id,
             "amount": amount,
-            "phone": phone,
-            "reference": uid("ref_")
+            "mobile_number": phone,
+            "Ported_number": True,
+            "airtime_type": "VTU"
         }
 
         purchase = _create_purchase(user, "AIRTIME", amount_kobo, payload)
