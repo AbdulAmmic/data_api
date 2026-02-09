@@ -689,3 +689,86 @@ def register_service_routes(bp):
             "status": "PENDING",
             "message": "Airtime to cash request submitted. Admin will verify."
         })
+
+    # =====================================================
+    # TRANSACTION HISTORY & RECEIPT
+    # =====================================================
+    @bp.get("/history")
+    @auth_required
+    def list_service_history():
+        """
+        List all service purchases (Data, Airtime, Cable, etc.)
+        """
+        user = request.user
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 20, type=int)
+
+        pagination = (
+            ServicePurchase.query
+            .filter_by(user_id=user.id)
+            .order_by(ServicePurchase.created_at.desc())
+            .paginate(page=page, per_page=per_page, error_out=False)
+        )
+
+        items = []
+        for p in pagination.items:
+            # Parse payloads safely to get details like "phone", "plan"
+            details = {}
+            try:
+                # 1. Start with request (contains user input: phone, amount, network)
+                if p.request_payload:
+                    details.update(json.loads(p.request_payload))
+                
+                # 2. Update with response (contains success status, tokens, refs)
+                if p.response_payload:
+                    details.update(json.loads(p.response_payload))
+            except:
+                pass
+
+            items.append({
+                "id": p.id,
+                "service": p.service,
+                "amount": kobo_to_naira(p.amount_kobo),
+                "status": p.status,
+                "date": p.created_at.isoformat(),
+                "details": details
+            })
+
+        return success_response({
+            "items": items,
+            "total": pagination.total,
+            "pages": pagination.pages,
+            "current_page": pagination.page
+        })
+
+    @bp.get("/transaction/<id>")
+    @auth_required
+    def get_transaction_details(id):
+        """
+        Get full details for a receipt
+        """
+        user = request.user
+        tx = ServicePurchase.query.filter_by(id=id, user_id=user.id).first()
+        
+        if not tx:
+            return error_response("Transaction not found", 404)
+
+        data = {
+            "id": tx.id,
+            "service": tx.service,
+            "amount": kobo_to_naira(tx.amount_kobo),
+            "status": tx.status,
+            "date": tx.created_at.isoformat(),
+            "provider": tx.provider,
+        }
+
+        # Embed payloads
+        try:
+            if tx.request_payload:
+                data["request"] = json.loads(tx.request_payload)
+            if tx.response_payload:
+                data["response"] = json.loads(tx.response_payload)
+        except:
+            pass
+
+        return success_response(data)
