@@ -1,8 +1,8 @@
 
-from app import create_app
+from app import app
 from models import PriceItem
 
-app = create_app()
+# app = create_app() (Removed)
 
 with app.app_context():
     items = PriceItem.query.all()

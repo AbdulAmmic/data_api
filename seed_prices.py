@@ -1,8 +1,8 @@
-from app import create_app
+from app import app
 from models import db, PriceItem
 from utils.helpers import uid
 
-app = create_app()
+# app = create_app() (Removed)
 
 def seed_prices():
     with app.app_context():
