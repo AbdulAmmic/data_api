@@ -83,12 +83,18 @@ def register_auth_routes(bp):
         from models import UserDedicatedAccount
         acct = UserDedicatedAccount.query.filter_by(user_id=user.id, is_active=True).first()
         
+        # Fetch roles
+        from models import UserRole, Role
+        user_roles = db.session.query(Role.name).join(UserRole).filter(UserRole.user_id == user.id).all()
+        roles = [r[0] for r in user_roles]
+
         user_data = {
             "id": user.id,
             "full_name": user.full_name,
             "email": user.email,
             "phone": user.phone,
             "has_pin": user.has_pin,
+            "roles": roles,
             "wallet_balance": user.wallet_balance_kobo / 100.0,
             "virtual_account": {
                 "bank_name": acct.bank_name,

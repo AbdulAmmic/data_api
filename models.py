@@ -149,3 +149,8 @@ class PriceItem(db.Model):
         if self.markup_type == "PERCENT":
             return int(self.provider_cost_kobo * (1 + self.markup_value / 100))
         return int(self.provider_cost_kobo + self.markup_value)
+
+# Helpers
+def get_user_by_email(email):
+    return User.query.filter_by(email=email).first()
+
