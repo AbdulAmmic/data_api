@@ -11,11 +11,13 @@ with app.app_context():
     print("Inside app context.")
     
     # 1. Create Admin Role
+    # 1. Create Admin Role
     try:
         admin_role = Role.query.filter_by(name="admin").first()
         if not admin_role:
             print("Creating admin role...")
-            admin_role = Role(id=uid("role_"), name="admin")
+            # Use fixed ID to fit in 32 chars and be consistent
+            admin_role = Role(id="role_admin", name="admin")
             db.session.add(admin_role)
             db.session.commit()
             print("Admin role created.")
