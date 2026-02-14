@@ -8,10 +8,14 @@ def admin_required(fn):
     from functools import wraps
     @wraps(fn)
     def wrapper(*args, **kwargs):
+        print(f"DEBUG: Entering admin_required for {fn.__name__}")
         user = request.user
+        print(f"DEBUG: User is {user.email if user else 'None'}")
         is_admin = UserRole.query.filter_by(user_id=user.id, role_id="role_admin").first()
         if not is_admin:
+            print("DEBUG: Admin check failed")
             return error_response("Admin access required", 403)
+        print("DEBUG: Admin check passed")
         return fn(*args, **kwargs)
     return wrapper
 
@@ -130,14 +134,23 @@ def register_admin_routes(bp):
     @auth_required
     @admin_required
     def get_stats():
-        total_users = User.query.count()
-        total_balance_kobo = db.session.query(db.func.sum(User.wallet_balance_kobo)).scalar() or 0
-        pending_txs = WalletTransaction.query.filter_by(status="PENDING").count()
-        # Total successful debits (sales)
-        total_sales_kobo = db.session.query(db.func.sum(WalletTransaction.amount_kobo)).filter(
-            WalletTransaction.tx_type == "DEBIT", 
-            WalletTransaction.status == "SUCCESS"
-        ).scalar() or 0
+        print("DEBUG: Inside get_stats function")
+        try:
+            total_users = User.query.count()
+            total_balance_kobo = db.session.query(db.func.sum(User.wallet_balance_kobo)).scalar() or 0
+            pending_txs = WalletTransaction.query.filter_by(status="PENDING").count()
+            # Total successful debits (sales)
+            total_sales_kobo = db.session.query(db.func.sum(WalletTransaction.amount_kobo)).filter(
+                WalletTransaction.tx_type == "DEBIT", 
+                WalletTransaction.status == "SUCCESS"
+            ).scalar() or 0
+        except Exception as e:
+            print(f"Stats Error: {e}")
+            return error_response(f"Stats calculation failed: {str(e)}", 500)
+
+        # Convert potentially Decimal types to float
+        total_balance_kobo = float(total_balance_kobo)
+        total_sales_kobo = float(total_sales_kobo)
 
         return success_response({
             "total_users": total_users,
@@ -160,16 +173,23 @@ def register_admin_routes(bp):
         
         pagination = q.order_by(WalletTransaction.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
         
-        txs = [{
-            "id": t.id,
-            "user_id": t.user_id,
-            "type": t.tx_type,
-            "amount": t.amount_kobo / 100.0,
-            "status": t.status,
-            "narration": t.narration,
-            "reference": t.reference,
-            "date": t.created_at.isoformat()
-        } for t in pagination.items]
+        txs = []
+        for t in pagination.items:
+            try:
+                txs.append({
+                    "id": t.id,
+                    "user_id": t.user_id,
+                    "type": t.tx_type,
+                    "amount": (t.amount_kobo or 0) / 100.0,
+                    "status": t.status,
+                    "narration": t.narration,
+                    "reference": t.reference,
+                    "date": t.created_at.isoformat() if t.created_at else None
+                })
+            except Exception as e:
+                print(f"Error serializing transaction {t.id}: {e}")
+                # Fallback or skip
+                continue
 
         return success_response({
             "transactions": txs,

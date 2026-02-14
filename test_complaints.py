@@ -78,7 +78,7 @@ def test_complaints_flow():
     # 4. Login as Admin
     print("\n[Admin] Logging in...")
     # Assuming default admin credentials or the one from seed_admin
-    admin_token = login("admin@example.com", "admin123") # Update if your seed uses different creds
+    admin_token = login("admin.majire@data.com", "12345678") 
     print("[Admin] Logged in.")
 
     # 5. List Complaints (Admin)
