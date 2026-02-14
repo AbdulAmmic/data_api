@@ -72,7 +72,7 @@ def get_my_complaints():
 
 # --- ADMIN ENDPOINTS ---
 
-@admin_support_bp.get("/")
+@admin_support_bp.get("")
 @auth_required
 @admin_required
 def list_all_complaints():
