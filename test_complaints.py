@@ -38,7 +38,7 @@ def test_complaints_flow():
     print(f"[User] Registering {email}...")
     reg_payload = {
         "email": email, "password": password, 
-        "first_name": "Test", "last_name": "User", "phone": f"080{random_suffix[:8]}" # Ensure phone is somewhat unique/valid length
+        "full_name": "Test User", "phone": f"080{random_suffix[:8]}" # Ensure phone is somewhat unique/valid length
     }
     # Pad phone to 11 digits
     reg_payload["phone"] = "080" + str(uuid.uuid4().int)[:8] 

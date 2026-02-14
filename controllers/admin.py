@@ -9,7 +9,7 @@ def admin_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         user = request.user
-        is_admin = UserRole.query.filter_by(user_id=user.id, role_id="admin").first()
+        is_admin = UserRole.query.filter_by(user_id=user.id, role_id="role_admin").first()
         if not is_admin:
             return error_response("Admin access required", 403)
         return fn(*args, **kwargs)
@@ -107,7 +107,7 @@ def register_admin_routes(bp):
         
         users_list = []
         for u in pagination.items:
-            is_admin = UserRole.query.filter_by(user_id=u.id, role_id="admin").first()
+            is_admin = UserRole.query.filter_by(user_id=u.id, role_id="role_admin").first()
             users_list.append({
                 "id": u.id,
                 "full_name": u.full_name,
