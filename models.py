@@ -154,3 +154,19 @@ class PriceItem(db.Model):
 def get_user_by_email(email):
     return User.query.filter_by(email=email).first()
 
+# ---- Support ----
+class Complaint(db.Model):
+    __tablename__ = "complaints"
+    id = db.Column(db.String(64), primary_key=True)
+    user_id = db.Column(db.String(64), db.ForeignKey("users.id"), nullable=False, index=True)
+    
+    subject = db.Column(db.String(255), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    
+    status = db.Column(db.String(20), default="OPEN") # OPEN, PENDING, RESOLVED, CLOSED
+    
+    admin_reply = db.Column(db.Text, nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+

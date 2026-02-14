@@ -7,6 +7,7 @@ from controllers.services import register_service_routes
 from controllers.webhooks import register_webhook_routes
 from controllers.reconcile import register_reconcile_routes
 from controllers.admin import register_admin_routes
+from controllers.support import register_support_routes
 
 # ADMIN BLUEPRINT (separate from services)
 admin_bp = Blueprint("admin", __name__, url_prefix="/api/admin")
@@ -20,6 +21,7 @@ def register_routes(app):
     register_webhook_routes(webhooks_bp)
     register_reconcile_routes(admin_bp)
     register_admin_routes(admin_bp)
+    register_support_routes(app)
 
     # Register blueprints
     app.register_blueprint(auth_bp)
