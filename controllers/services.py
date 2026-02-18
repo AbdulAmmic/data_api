@@ -299,11 +299,11 @@ def register_service_routes(bp):
             
         amount_kobo = naira_to_kobo(float(amount))
         
-        m_type_val = "2" if (mtype or "prepaid").lower() == "postpaid" else "1"
+        m_type_val = 2 if (mtype or "prepaid").lower() == "postpaid" else 1
 
         payload = {
-            "disco_name": disco_conf["disco_id"],
-            "amount": amount,
+            "disco_name": int(disco_conf["disco_id"]) if str(disco_conf["disco_id"]).isdigit() else disco_conf["disco_id"],
+            "amount": int(float(amount)),
             "meter_number": meter, 
             "MeterType": m_type_val
         }
@@ -316,13 +316,22 @@ def register_service_routes(bp):
         status, body = buy_bill_payment(payload)
         purchase.response_payload = body
         
+        parsed_body = {}
+        try:
+             parsed_body = json.loads(body)
+        except:
+             pass
+
         if status not in (200, 201):
              purchase.status = "FAILED"; db.session.commit()
              _refund_wallet(user, amount_kobo, "Refund: Electricity failed")
-             return error_response("Payment failed", 502, {"provider": body})
+             return error_response("Payment failed", 502, {"provider": parsed_body})
 
         purchase.status = "SUCCESS"; db.session.commit()
-        return success_response({"purchase_id": purchase.id}, "Payment successful")
+        return success_response({
+            "purchase_id": purchase.id,
+            "provider_response": parsed_body
+        }, "Payment successful")
 
 
     # =====================================================
@@ -353,8 +362,8 @@ def register_service_routes(bp):
         amount_kobo = naira_to_kobo(amount_naira)
 
         payload = {
-            "cablename": plan_conf["cable_id"], # 1, 2, 3
-            "cableplan": plan_conf["package_id"], # 2, 6, etc
+            "cablename": int(plan_conf["cable_id"]), # 1, 2, 3
+            "cableplan": int(plan_conf["package_id"]), # 2, 6, etc
             "smart_card_number": iuc
         }
 
@@ -402,7 +411,7 @@ def register_service_routes(bp):
 
         payload = {
             "exam_name": plan_conf["datastation_id"], # WAEC/NECO
-            "quantity": quantity
+            "quantity": int(quantity)
         }
         
         # If provider doesn't support bulk, we might need loop. 
@@ -416,15 +425,24 @@ def register_service_routes(bp):
              purchase.status = "FAILED"; db.session.commit(); return err
         
         status, body = generate_epin(payload)
+        parsed_body = {}
+        try:
+             parsed_body = json.loads(body)
+        except:
+             pass
+
         purchase.response_payload = body
         
         if status not in (200, 201):
              purchase.status = "FAILED"; db.session.commit()
              _refund_wallet(user, amount_kobo, "Refund: PIN Generation failed")
-             return error_response("PIN Generation failed", 502, {"provider": body})
+             return error_response("PIN Generation failed", 502, {"provider": parsed_body})
         
         purchase.status = "SUCCESS"; db.session.commit()
-        return success_response({"purchase_id": purchase.id, "tokens": body}, "PIN generated")
+        return success_response({
+            "purchase_id": purchase.id,
+            "provider_response": parsed_body
+        }, "PIN generated")
 
     # =====================================================
     # DATA PURCHASE (CONFIG BASED)

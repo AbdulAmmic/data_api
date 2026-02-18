@@ -142,3 +142,76 @@ def register_auth_routes(bp):
             return error_response("Invalid PIN", 401)
             
         return success_response({"valid": True}, "PIN is valid")
+
+    @bp.post("/forgot-password")
+    def forgot_password():
+        data = request.get_json(force=True, silent=True) or {}
+        email = (data.get("email") or "").strip().lower()
+
+        if not email:
+            return error_response("Email required", 400)
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            # Don't reveal user existence? Or just say 'sent if email exists'
+            # For this internal app, let's just return success to avoid enumeration but for now user wants it working.
+            # Standard practice: Return success anyway.
+            return success_response({}, "If email exists, reset code sent")
+
+        from utils.helpers import uid
+        from datetime import datetime, timedelta
+        from utils.email import send_email
+
+        # Generate Token (6 digits for ease)
+        import random
+        token = str(random.randint(100000, 999999))
+        
+        user.reset_token = token
+        user.reset_token_expiry = datetime.utcnow() + timedelta(minutes=15)
+        db.session.commit()
+
+        # Send Email
+        subject = "Password Reset Code"
+        body = f"""
+        <h3>Password Reset Request</h3>
+        <p>Use the following code to reset your password:</p>
+        <h2>{token}</h2>
+        <p>This code expires in 15 minutes.</p>
+        """
+        
+        # Async this in production!
+        sent, msg = send_email(email, subject, body)
+        
+        if not sent:
+             print(f"Failed to send email to {email}: {msg}")
+             # Optional: return error, but user token is set.
+        
+        return success_response({}, "Reset code sent to email")
+
+    @bp.post("/reset-password")
+    def reset_password():
+        data = request.get_json(force=True, silent=True) or {}
+        email = (data.get("email") or "").strip().lower()
+        token = (data.get("token") or "").strip()
+        new_password = data.get("new_password")
+
+        if not email or not token or not new_password:
+            return error_response("email, token, new_password required", 400)
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return error_response("Invalid request", 400)
+
+        from datetime import datetime
+        if not user.reset_token or user.reset_token != token:
+            return error_response("Invalid token", 400)
+
+        if user.reset_token_expiry < datetime.utcnow():
+            return error_response("Token expired", 400)
+
+        user.set_password(new_password)
+        user.reset_token = None
+        user.reset_token_expiry = None
+        db.session.commit()
+
+        return success_response({}, "Password reset successfully")

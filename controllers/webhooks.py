@@ -69,18 +69,22 @@ def register_webhook_routes(bp):
                 ).first()
 
                 if not existing:
+                    # Apply 1.8% Charge
+                    fee_kobo = int(amount_kobo * 0.018)
+                    credit_kobo = amount_kobo - fee_kobo
+
                     tx = WalletTransaction(
                         id=uid("wtx_"),
                         user_id=user.id,
                         tx_type="CREDIT",
-                        amount_kobo=amount_kobo,
+                        amount_kobo=credit_kobo, # Credit the net amount
                         status="SUCCESS",
-                        narration="Wallet funding via bank transfer",
+                        narration=f"Wallet funding via bank transfer (Fee: {kobo_to_naira(fee_kobo)})",
                         provider="PAYSTACK",
                         reference=reference,
                         raw_response=json.dumps(data),
                     )
-                    user.wallet_balance_kobo += amount_kobo
+                    user.wallet_balance_kobo += credit_kobo
                     db.session.add(tx)
                     db.session.commit()
 
@@ -143,8 +147,18 @@ def register_webhook_routes(bp):
             )
 
         # Credit wallet (idempotent)
+        # Credit wallet (idempotent)
+        # Apply 1.8% Charge
+        fee_kobo = int(amount_kobo * 0.018)
+        credit_kobo = amount_kobo - fee_kobo
+
         tx.status = "SUCCESS"
-        user.wallet_balance_kobo += amount_kobo
+        tx.amount_kobo = credit_kobo # Update tx amount to what is actually credited? Or keep original?
+        # Usually it's better to keep original amount in a separate field, but for simplicity here we track the credit.
+        # Let's track the credit amount to match the wallet balance update.
+        tx.narration = f"Wallet funding via Paystack (Fee: {kobo_to_naira(fee_kobo)})"
+        
+        user.wallet_balance_kobo += credit_kobo
         tx.raw_response = json.dumps(data)
         db.session.commit()
 
@@ -249,19 +263,23 @@ def register_webhook_routes(bp):
         except ValueError:
             return error_response("Invalid amount format", 400)
 
+        # Apply 1.8% Charge
+        fee_kobo = int(amount_kobo * 0.018)
+        credit_kobo = amount_kobo - fee_kobo
+
         tx = WalletTransaction(
             id=uid("wtx_"),
             user_id=user.id,
             tx_type="CREDIT",
-            amount_kobo=amount_kobo,
+            amount_kobo=credit_kobo,
             status="SUCCESS",
-            narration=f"Wallet funding via Gafiapay Transfer ({account_number})",
+            narration=f"Wallet funding via Gafiapay Transfer ({account_number}) - Fee: {kobo_to_naira(fee_kobo)}",
             provider="GAFIAPAY",
             reference=reference,
             raw_response=json.dumps(data),
         )
 
-        user.wallet_balance_kobo += amount_kobo
+        user.wallet_balance_kobo += credit_kobo
         db.session.add(tx)
         db.session.commit()
 

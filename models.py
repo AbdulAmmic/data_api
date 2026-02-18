@@ -16,6 +16,10 @@ class User(db.Model):
     paystack_customer_code = db.Column(db.String(64), nullable=True, index=True)
     wallet_balance_kobo = db.Column(db.BigInteger, default=0)
     transaction_pin_hash = db.Column(db.String(255), nullable=True)
+    
+    # Forgot Password
+    reset_token = db.Column(db.String(100), nullable=True, index=True)
+    reset_token_expiry = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, raw: str):
         self.password_hash = generate_password_hash(raw)

@@ -226,9 +226,25 @@ def register_wallet_routes(bp):
             )
 
         # credit wallet (idempotent)
+        # credit wallet (idempotent)
         balance = user.wallet_balance_kobo or 0
-        user.wallet_balance_kobo = balance + tx.amount_kobo
+
+        # Apply 1.8% Charge
+        fee_kobo = int(tx.amount_kobo * 0.018)
+        credit_kobo = tx.amount_kobo - fee_kobo
+        
+        # Update tx to reflect the actual credited amount?
+        # If we change tx.amount_kobo here, it might look like the user paid less.
+        # But we need to track the credit.
+        # Let's strictly update the balance and narration.
+        
+        user.wallet_balance_kobo = balance + credit_kobo
         tx.status = "SUCCESS"
+        tx.narration = f"{tx.narration} (Fee: {kobo_to_naira(fee_kobo)})"
+        # We might want to store the fee somewhere or update amount_kobo to match the credit. 
+        # Updating amount_kobo to credit_kobo to ensure reconciliation matches wallet balance.
+        tx.amount_kobo = credit_kobo
+        
         db.session.commit()
 
         return success_response({
