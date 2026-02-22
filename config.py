@@ -37,6 +37,13 @@ class Config:
     GAFIAPAY_BASE_URL = os.getenv("GAFIAPAY_BASE_URL", "https://api.gafiapay.com/api/v1/external")
 
     # -----------------------------
+    # CHEETAHPAY CONFIG
+    # -----------------------------
+    CHEETAHPAY_PUBLIC_KEY = os.getenv("CHEETAHPAY_PUBLIC_KEY")
+    CHEETAHPAY_PRIVATE_KEY = os.getenv("CHEETAHPAY_PRIVATE_KEY")
+    CHEETAHPAY_MODE = os.getenv("CHEETAHPAY_MODE", "test") # test or live
+
+    # -----------------------------
     # WALLET SETTINGS
     # -----------------------------
     DEFAULT_WALLET_BALANCE = 0.00

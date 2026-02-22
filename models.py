@@ -54,6 +54,10 @@ class AirtimeToCashTransaction(db.Model):
     status = db.Column(db.String(20), default="PENDING") # PENDING, APPROVED, REJECTED
     admin_note = db.Column(db.String(255), nullable=True)
     
+    # Cheetahpay specific
+    reference = db.Column(db.String(120), unique=True, nullable=True, index=True)
+    provider_reference = db.Column(db.String(120), nullable=True)
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class WalletTransaction(db.Model):

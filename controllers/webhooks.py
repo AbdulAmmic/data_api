@@ -294,3 +294,92 @@ def register_webhook_routes(bp):
             "Wallet funded successfully",
             200
         )
+
+    # =================================================
+    # 🔹 4. CHEETAHPAY WEBHOOK (AIRTIME TO CASH)
+    # =================================================
+    @bp.route("/cheetahpay", methods=["GET", "POST"])
+    def cheetahpay_webhook():
+        # Cheetahpay typically sends GET query parameters, but some might use POST
+        from models import AirtimeToCashTransaction
+        
+        # Merge source of parameters
+        params = request.args.to_dict()
+        if request.method == "POST":
+            try:
+                # Could be form data or JSON
+                if request.is_json:
+                    params.update(request.get_json(force=True))
+                else:
+                    params.update(request.form.to_dict())
+            except:
+                pass
+
+        # Log incoming request for debugging
+        print(f"Cheetahpay Callback ({request.method}): {params}")
+        
+        # Parameters expected: order_id, status, amount, network
+        order_internal_id = params.get("order_id")
+        status = params.get("status") # 'credited', 'invalid', 'pending'
+        amount = params.get("amount")
+        
+        if not order_internal_id or not status:
+            return "Missing parameters", 400
+            
+        tx = AirtimeToCashTransaction.query.filter_by(id=order_internal_id).first()
+        if not tx:
+             # Try searching by reference if id doesn't match
+             tx = AirtimeToCashTransaction.query.filter_by(reference=order_internal_id).first()
+        
+        if not tx:
+            return "Transaction not found", 404
+            
+        if tx.status in ["APPROVED", "REJECTED"]:
+            return "Already processed", 200
+
+        if status == "credited":
+            tx.status = "APPROVED"
+            tx.admin_note = f"Automatically approved via Cheetahpay callback. Provided Amount: {amount}"
+            
+            # Credit User Wallet
+            user = db.session.get(User, tx.user_id)
+            if user:
+                # We should use the amount from Cheetahpay if possible, 
+                # but tx.amount_kobo stores our expected amount.
+                # Cheetahpay amount might have fees deducted or be slightly different.
+                # Usually we credit based on what was RECEIVED.
+                
+                try:
+                    received_amount_naira = float(amount)
+                    credit_kobo = int(received_amount_naira * 100)
+                except:
+                    credit_kobo = tx.amount_kobo
+
+                # Add a buffer/check? For now, let's just credit.
+                user.wallet_balance_kobo += credit_kobo
+                
+                # Record Wallet Transaction
+                w_tx = WalletTransaction(
+                    id=uid("wtx_"),
+                    user_id=user.id,
+                    tx_type="CREDIT",
+                    amount_kobo=credit_kobo,
+                    status="SUCCESS",
+                    narration=f"Airtime to Cash - {tx.network} - {tx.phone_from}",
+                    provider="CHEETAHPAY",
+                    reference=tx.id
+                )
+                db.session.add(w_tx)
+            
+            db.session.commit()
+            print(f"Cheetahpay APPROVED: {tx.id} for User {tx.user_id}")
+            return "OK", 200
+            
+        elif status == "invalid":
+            tx.status = "REJECTED"
+            tx.admin_note = "Rejected by Cheetahpay: Invalid Airtime"
+            db.session.commit()
+            print(f"Cheetahpay REJECTED: {tx.id}")
+            return "OK", 200
+            
+        return "PENDING", 200

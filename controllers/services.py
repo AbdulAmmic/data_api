@@ -663,13 +663,14 @@ def register_service_routes(bp):
     @auth_required
     def airtime_to_cash_route():
         from models import AirtimeToCashTransaction
+        from utils.cheetahpay import CheetahPayClient
         user = request.user
         data = request.get_json(force=True)
 
         network = data.get("network")
         phone_from = data.get("phone_from")
         amount = data.get("amount")
-        share_pin = data.get("share_pin")
+        share_pin = data.get("share_pin") # This could be the card PIN or the transfer PIN
         transaction_pin = data.get("transaction_pin")
 
         if not network or not phone_from or not amount:
@@ -680,23 +681,52 @@ def register_service_routes(bp):
 
         try:
             amount_naira = float(amount)
-            # We treat input as Naira. 
-            # Note: We aren't debiting the wallet! The user is SENDING us airtime.
-            # We might want to credit them LATER.
         except:
             return error_response("Invalid amount format", 400)
 
+        tx_id = uid("a2c_")
+        
+        # Initialize Cheetahpay Client
+        client = CheetahPayClient()
+        
+        # Determine if it's a PIN or a Transfer
+        # If share_pin looks like a 10-16 digit recharge pin, we treat as PIN deposit.
+        # Otherwise, we treat it as a Transfer deposit.
+        is_pin_deposit = share_pin and len(share_pin) >= 10 and share_pin.isdigit()
+        
+        if is_pin_deposit:
+             status_code, response = client.deposit_airtime_pin(
+                 pin=share_pin,
+                 amount=amount_naira,
+                 network=network,
+                 order_id=tx_id
+             )
+        else:
+             status_code, response = client.initiate_airtime_transfer(
+                 amount=amount_naira,
+                 network=network,
+                 depositor_phone=phone_from,
+                 order_id=tx_id
+             )
+
+        # Log Cheetahpay response
+        print(f"Cheetahpay Response ({tx_id}): {response}")
+
+        # Note: Even if Cheetahpay fails initially, we might want to record it
+        # or just return error to user.
+        if status_code not in [200, 201] or not response.get("success"):
+             return error_response(f"Cheetahpay Error: {response.get('message', 'Failed to initiate')}", status_code)
+
         tx = AirtimeToCashTransaction(
-            id=uid("a2c_"),
+            id=tx_id,
             user_id=user.id,
             network=network,
             phone_from=phone_from,
-            amount_sent=int(amount_naira), # Storing as Naira or we should consistency use kobo?
-            # Model definition comment said "input usually Naira". Let's store as kobo to be consistent with DB usage of "kobo" suffix if we renamed it.
-            # But line 261 defined `amount_kobo`. So we must convert.
+            amount_sent=int(amount_naira),
             amount_kobo=naira_to_kobo(amount_naira),
             share_pin=share_pin,
-            status="PENDING"
+            status="PENDING",
+            provider_reference=response.get("reference") or response.get("transaction_id")
         )
         
         db.session.add(tx)
@@ -705,7 +735,8 @@ def register_service_routes(bp):
         return success_response({
             "id": tx.id,
             "status": "PENDING",
-            "message": "Airtime to cash request submitted. Admin will verify."
+            "message": response.get("message", "Request submitted successfully. Waiting for Cheetahpay confirmation."),
+            "cheetahpay_response": response
         })
 
     # =====================================================
