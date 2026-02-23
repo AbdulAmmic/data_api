@@ -37,11 +37,11 @@ class CheetahPayClient:
              print(f"DEBUG: Using Test Mode PIN for validation")
 
         try:
-            # We send both headers and payload. 
-            # Note: Cheetahpay sometimes expects payload fields in the body as form-data or JSON.
-            # We use json=payload to be safe for v1.
             response = requests.post(url, json=payload, headers=self._get_headers())
-            return response.status_code, response.json()
+            try:
+                return response.status_code, response.json()
+            except:
+                return response.status_code, {"success": False, "message": "Invalid JSON response from provider", "raw": response.text}
         except Exception as e:
             return 500, {"success": False, "message": str(e)}
 
@@ -62,7 +62,10 @@ class CheetahPayClient:
 
         try:
             response = requests.post(url, json=payload, headers=self._get_headers())
-            return response.status_code, response.json()
+            try:
+                return response.status_code, response.json()
+            except:
+                return response.status_code, {"success": False, "message": "Invalid JSON response from provider", "raw": response.text}
         except Exception as e:
             return 500, {"success": False, "message": str(e)}
 

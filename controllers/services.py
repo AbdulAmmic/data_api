@@ -76,6 +76,14 @@ def register_service_routes(bp):
         db.session.commit()
         return purchase
 
+    def _safe_json(body):
+        """Safely parse JSON from provider body."""
+        if not body: return {}
+        try:
+            return json.loads(body)
+        except:
+            return {"raw_response": body}
+
 
 
     # =====================================================
@@ -181,10 +189,11 @@ def register_service_routes(bp):
         provider_disco_id = disco_conf["disco_id"] if disco_conf else disco # Fallback or strict?
 
         status, body = validate_meter(meter, provider_disco_id, mtype or "prepaid")
+        parsed_body = _safe_json(body)
         if status != 200:
-            return error_response("Meter validation failed", 502, {"provider": body})
+            return error_response("Meter validation failed", 502, {"provider": parsed_body})
 
-        return success_response({"provider_response": body})
+        return success_response({"provider_response": parsed_body})
 
     @bp.get("/validate/iuc")
     @auth_required
@@ -204,10 +213,11 @@ def register_service_routes(bp):
         else: cable_id = cable
 
         status, body = validate_iuc(iuc, cable_id)
+        parsed_body = _safe_json(body)
         if status != 200:
-            return error_response("IUC validation failed", 502, {"provider": body})
+            return error_response("IUC validation failed", 502, {"provider": parsed_body})
 
-        return success_response({"provider_response": body})
+        return success_response({"provider_response": parsed_body})
 
     # =====================================================
     # DATA PURCHASE (CONFIG BASED)
@@ -259,17 +269,20 @@ def register_service_routes(bp):
              return err
 
         status, body = buy_airtime(payload)
-        # ... standard handling ...
-        purchase.response_payload = body
+        parsed_body = _safe_json(body)
+        purchase.response_payload = body # Store raw for history
         if status not in (200, 201):
             purchase.status = "FAILED"
             db.session.commit()
             _refund_wallet(user, amount_kobo, "Refund: Airtime failed")
-            return error_response("Airtime failed", 502, {"provider": body})
+            return error_response("Airtime failed", 502, {"provider": parsed_body})
 
         purchase.status = "SUCCESS"
         db.session.commit()
-        return success_response({"purchase_id": purchase.id}, "Airtime successful")
+        return success_response({
+            "purchase_id": purchase.id,
+            "provider_response": parsed_body
+        }, "Airtime successful")
 
 
     # =====================================================
@@ -316,11 +329,7 @@ def register_service_routes(bp):
         status, body = buy_bill_payment(payload)
         purchase.response_payload = body
         
-        parsed_body = {}
-        try:
-             parsed_body = json.loads(body)
-        except:
-             pass
+        parsed_body = _safe_json(body)
 
         if status not in (200, 201):
              purchase.status = "FAILED"; db.session.commit()
@@ -373,15 +382,19 @@ def register_service_routes(bp):
             purchase.status = "FAILED"; db.session.commit(); return err
 
         status, body = buy_cable_subscription(payload)
+        parsed_body = _safe_json(body)
         purchase.response_payload = body
 
         if status not in (200, 201):
              purchase.status = "FAILED"; db.session.commit()
              _refund_wallet(user, amount_kobo, "Refund: Cable failed")
-             return error_response("Subscription failed", 502, {"provider": body})
+             return error_response("Subscription failed", 502, {"provider": parsed_body})
 
         purchase.status = "SUCCESS"; db.session.commit()
-        return success_response({"purchase_id": purchase.id}, "Subscription successful")
+        return success_response({
+            "purchase_id": purchase.id,
+            "provider_response": parsed_body
+        }, "Subscription successful")
 
 
     # =====================================================
@@ -425,11 +438,7 @@ def register_service_routes(bp):
              purchase.status = "FAILED"; db.session.commit(); return err
         
         status, body = generate_epin(payload)
-        parsed_body = {}
-        try:
-             parsed_body = json.loads(body)
-        except:
-             pass
+        parsed_body = _safe_json(body)
 
         purchase.response_payload = body
         
@@ -499,13 +508,14 @@ def register_service_routes(bp):
             return err
 
         status, body = buy_data(payload)
+        parsed_body = _safe_json(body)
         purchase.response_payload = body
 
         if status not in (200, 201):
             purchase.status = "FAILED"
             db.session.commit()
             _refund_wallet(user, amount_kobo, "Refund: Data failed")
-            return error_response("Data purchase failed", 502, {"provider": body})
+            return error_response("Data purchase failed", 502, {"provider": parsed_body})
 
         purchase.status = "SUCCESS"
         db.session.commit()
@@ -513,7 +523,7 @@ def register_service_routes(bp):
         return success_response({
             "purchase_id": purchase.id,
             "amount_naira": amount_naira,
-            "provider_response": body
+            "provider_response": parsed_body
         }, "Data purchased")
 
     # =====================================================
@@ -575,13 +585,14 @@ def register_service_routes(bp):
             return err
 
         status, body = buy_airtime_topup(payload)
+        parsed_body = _safe_json(body)
         purchase.response_payload = body
 
         if status not in (200, 201):
             purchase.status = "FAILED"
             db.session.commit()
             _refund_wallet(user, amount_kobo, "Refund: Airtime failed")
-            return error_response("Airtime failed", 502, {"provider": body})
+            return error_response("Airtime failed", 502, {"provider": parsed_body})
 
         purchase.status = "SUCCESS"
         db.session.commit()
@@ -589,7 +600,7 @@ def register_service_routes(bp):
         return success_response({
             "purchase_id": purchase.id,
             "amount_naira": kobo_to_naira(amount_kobo),
-            "provider_response": body
+            "provider_response": parsed_body
         }, "Airtime successful")
 
 
@@ -637,13 +648,14 @@ def register_service_routes(bp):
             return err
 
         status, body = generate_airtime_pin(**payload)
+        parsed_body = _safe_json(body)
         purchase.response_payload = body
 
         if status not in (200, 201):
             purchase.status = "FAILED"
             db.session.commit()
             _refund_wallet(user, amount_kobo, "Refund: Airtime PIN failed")
-            return error_response("Airtime PIN failed", 502, {"provider": body})
+            return error_response("Airtime PIN failed", 502, {"provider": parsed_body})
 
         purchase.status = "SUCCESS"
         db.session.commit()
@@ -651,7 +663,7 @@ def register_service_routes(bp):
         return success_response({
             "purchase_id": purchase.id,
             "amount_naira": kobo_to_naira(amount_kobo),
-            "provider_response": body
+            "provider_response": parsed_body
         }, "Airtime PIN generated")
 
 
