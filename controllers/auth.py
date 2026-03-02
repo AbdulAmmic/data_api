@@ -215,3 +215,54 @@ def register_auth_routes(bp):
         db.session.commit()
 
         return success_response({}, "Password reset successfully")
+
+    @bp.post("/pin/reset-request")
+    @auth_required
+    def pin_reset_request():
+        user = request.user
+        from datetime import datetime, timedelta
+        import random
+        from utils.email import send_email
+
+        token = str(random.randint(100000, 999999))
+        user.reset_token = token
+        user.reset_token_expiry = datetime.utcnow() + timedelta(minutes=15)
+        db.session.commit()
+
+        subject = "Transaction PIN Reset Code"
+        body = f"""
+        <h3>PIN Reset Request</h3>
+        <p>Use the following code to reset your transaction PIN:</p>
+        <h2>{token}</h2>
+        <p>This code expires in 15 minutes.</p>
+        """
+        send_email(user.email, subject, body)
+        return success_response({}, "Reset code sent to your email")
+
+    @bp.post("/pin/reset-confirm")
+    @auth_required
+    def pin_reset_confirm():
+        user = request.user
+        data = request.get_json(force=True, silent=True) or {}
+        token = (data.get("token") or "").strip()
+        new_pin = (data.get("new_pin") or "").strip()
+
+        if not token or not new_pin:
+            return error_response("token and new_pin required", 400)
+
+        if not (new_pin.isdigit() and len(new_pin) == 4):
+            return error_response("PIN must be 4 digits", 400)
+
+        from datetime import datetime
+        if not user.reset_token or user.reset_token != token:
+            return error_response("Invalid token", 400)
+
+        if user.reset_token_expiry < datetime.utcnow():
+            return error_response("Token expired", 400)
+
+        user.set_pin(new_pin)
+        user.reset_token = None
+        user.reset_token_expiry = None
+        db.session.commit()
+
+        return success_response({}, "PIN reset successfully")
