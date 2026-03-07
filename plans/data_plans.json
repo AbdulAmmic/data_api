@@ -8,7 +8,7 @@
         "validity": "30 days",
         "cost_price": 365.0,
         "selling_price": 375.0,
-        "datastation_network_id": "3",
+        "datastation_network_id": "9mobile_cg_data",
         "datastation_plan_id": "183"
     },
     {
@@ -20,7 +20,7 @@
         "validity": "30 days",
         "cost_price": 548.0,
         "selling_price": 558.0,
-        "datastation_network_id": "3",
+        "datastation_network_id": "9mobile_cg_data",
         "datastation_plan_id": "184"
     },
     {
@@ -32,7 +32,7 @@
         "validity": "30 days",
         "cost_price": 720.0,
         "selling_price": 730.0,
-        "datastation_network_id": "3",
+        "datastation_network_id": "9mobile_cg_data",
         "datastation_plan_id": "185"
     },
     {
@@ -44,7 +44,7 @@
         "validity": "30 days",
         "cost_price": 1095.0,
         "selling_price": 1105.0,
-        "datastation_network_id": "3",
+        "datastation_network_id": "9mobile_cg_data",
         "datastation_plan_id": "186"
     },
     {
@@ -56,7 +56,7 @@
         "validity": "30 days",
         "cost_price": 1825.0,
         "selling_price": 1835.0,
-        "datastation_network_id": "3",
+        "datastation_network_id": "9mobile_cg_data",
         "datastation_plan_id": "188"
     },
     {
@@ -68,7 +68,7 @@
         "validity": "30 days",
         "cost_price": 3650.0,
         "selling_price": 3660.0,
-        "datastation_network_id": "3",
+        "datastation_network_id": "9mobile_cg_data",
         "datastation_plan_id": "189"
     },
     {
@@ -80,7 +80,7 @@
         "validity": "30 days",
         "cost_price": 182.0,
         "selling_price": 192.0,
-        "datastation_network_id": "3",
+        "datastation_network_id": "9mobile_cg_data",
         "datastation_plan_id": "221"
     },
     {
@@ -92,7 +92,7 @@
         "validity": "Monthly",
         "cost_price": 7300.0,
         "selling_price": 7310.0,
-        "datastation_network_id": "3",
+        "datastation_network_id": "9mobile_cg_data",
         "datastation_plan_id": "229"
     },
     {
@@ -104,7 +104,7 @@
         "validity": "30 month",
         "cost_price": 1460.0,
         "selling_price": 1470.0,
-        "datastation_network_id": "3",
+        "datastation_network_id": "9mobile_cg_data",
         "datastation_plan_id": "265"
     },
     {
@@ -116,7 +116,7 @@
         "validity": "1 day",
         "cost_price": 60.0,
         "selling_price": 70.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_sme_data",
         "datastation_plan_id": "281"
     },
     {
@@ -128,7 +128,7 @@
         "validity": "3 days (Social)",
         "cost_price": 345.0,
         "selling_price": 355.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "367"
     },
     {
@@ -140,7 +140,7 @@
         "validity": "3 days (Social)",
         "cost_price": 345.0,
         "selling_price": 355.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_sme_data",
         "datastation_plan_id": "374"
     },
     {
@@ -152,7 +152,7 @@
         "validity": "7 days",
         "cost_price": 545.0,
         "selling_price": 555.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "375"
     },
     {
@@ -164,7 +164,7 @@
         "validity": "30 days",
         "cost_price": 1545.0,
         "selling_price": 1555.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "376"
     },
     {
@@ -176,7 +176,7 @@
         "validity": "30days",
         "cost_price": 2045.0,
         "selling_price": 2055.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "377"
     },
     {
@@ -188,7 +188,7 @@
         "validity": "30days",
         "cost_price": 8045.0,
         "selling_price": 8055.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "379"
     },
     {
@@ -200,7 +200,7 @@
         "validity": "30days",
         "cost_price": 15045.0,
         "selling_price": 15055.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "380"
     },
     {
@@ -212,7 +212,7 @@
         "validity": "30 days",
         "cost_price": 4045.0,
         "selling_price": 4055.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "381"
     },
     {
@@ -224,7 +224,7 @@
         "validity": "2 days",
         "cost_price": 645.0,
         "selling_price": 655.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_sme_data",
         "datastation_plan_id": "382"
     },
     {
@@ -236,7 +236,7 @@
         "validity": "2 days",
         "cost_price": 800.0,
         "selling_price": 810.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_sme_data",
         "datastation_plan_id": "383"
     },
     {
@@ -248,7 +248,7 @@
         "validity": "7 days",
         "cost_price": 1545.0,
         "selling_price": 1555.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_sme_data",
         "datastation_plan_id": "384"
     },
     {
@@ -260,7 +260,7 @@
         "validity": "7 days",
         "cost_price": 1545.0,
         "selling_price": 1555.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "385"
     },
     {
@@ -272,7 +272,7 @@
         "validity": "2 days",
         "cost_price": 800.0,
         "selling_price": 810.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "386"
     },
     {
@@ -284,7 +284,7 @@
         "validity": "2 days",
         "cost_price": 645.0,
         "selling_price": 655.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "387"
     },
     {
@@ -296,7 +296,7 @@
         "validity": "2 says",
         "cost_price": 245.0,
         "selling_price": 255.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_sme_data",
         "datastation_plan_id": "404"
     },
     {
@@ -308,7 +308,7 @@
         "validity": "2 days",
         "cost_price": 145.0,
         "selling_price": 155.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_sme_data",
         "datastation_plan_id": "405"
     },
     {
@@ -320,7 +320,7 @@
         "validity": "2 days",
         "cost_price": 245.0,
         "selling_price": 255.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "406"
     },
     {
@@ -332,7 +332,7 @@
         "validity": "30 days",
         "cost_price": 3050.0,
         "selling_price": 3060.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_sme_data",
         "datastation_plan_id": "412"
     },
     {
@@ -344,7 +344,7 @@
         "validity": "7 days",
         "cost_price": 1045.0,
         "selling_price": 1055.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "425"
     },
     {
@@ -356,7 +356,7 @@
         "validity": "30 days",
         "cost_price": 2545.0,
         "selling_price": 2555.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "427"
     },
     {
@@ -368,7 +368,7 @@
         "validity": "7 days",
         "cost_price": 800.0,
         "selling_price": 810.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "428"
     },
     {
@@ -380,7 +380,7 @@
         "validity": "30 days",
         "cost_price": 3045.0,
         "selling_price": 3055.0,
-        "datastation_network_id": "4",
+        "datastation_network_id": "airtel_cg_data",
         "datastation_plan_id": "429"
     },
     {
@@ -392,7 +392,7 @@
         "validity": "30days",
         "cost_price": 425.0,
         "selling_price": 435.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_cg_data",
         "datastation_plan_id": "194"
     },
     {
@@ -404,7 +404,7 @@
         "validity": "30days",
         "cost_price": 850.0,
         "selling_price": 860.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_cg_data",
         "datastation_plan_id": "195"
     },
     {
@@ -416,7 +416,7 @@
         "validity": "30days",
         "cost_price": 1275.0,
         "selling_price": 1285.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_cg_data",
         "datastation_plan_id": "196"
     },
     {
@@ -428,7 +428,7 @@
         "validity": "30days",
         "cost_price": 2125.0,
         "selling_price": 2135.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_cg_data",
         "datastation_plan_id": "197"
     },
     {
@@ -440,7 +440,7 @@
         "validity": "30days",
         "cost_price": 4250.0,
         "selling_price": 4260.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_cg_data",
         "datastation_plan_id": "200"
     },
     {
@@ -452,7 +452,7 @@
         "validity": "14 days",
         "cost_price": 215.0,
         "selling_price": 225.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_cg_data",
         "datastation_plan_id": "203"
     },
     {
@@ -464,7 +464,7 @@
         "validity": "14 days",
         "cost_price": 90.0,
         "selling_price": 100.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_cg_data",
         "datastation_plan_id": "225"
     },
     {
@@ -476,7 +476,7 @@
         "validity": "1",
         "cost_price": 192.0,
         "selling_price": 202.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_sme_data",
         "datastation_plan_id": "275"
     },
     {
@@ -488,7 +488,7 @@
         "validity": "1 days",
         "cost_price": 290.0,
         "selling_price": 300.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_sme_data",
         "datastation_plan_id": "276"
     },
     {
@@ -500,7 +500,7 @@
         "validity": "2 days",
         "cost_price": 480.0,
         "selling_price": 490.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_sme_data",
         "datastation_plan_id": "277"
     },
     {
@@ -512,7 +512,7 @@
         "validity": "7 days",
         "cost_price": 1930.0,
         "selling_price": 1940.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_sme_data",
         "datastation_plan_id": "278"
     },
     {
@@ -524,7 +524,7 @@
         "validity": "3 days",
         "cost_price": 275.0,
         "selling_price": 285.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_sme_data",
         "datastation_plan_id": "396"
     },
     {
@@ -536,7 +536,7 @@
         "validity": "3 days",
         "cost_price": 825.0,
         "selling_price": 835.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_sme_data",
         "datastation_plan_id": "397"
     },
     {
@@ -548,7 +548,7 @@
         "validity": "3 days",
         "cost_price": 1375.0,
         "selling_price": 1385.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_sme_data",
         "datastation_plan_id": "398"
     },
     {
@@ -560,7 +560,7 @@
         "validity": "7 days",
         "cost_price": 325.0,
         "selling_price": 335.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_cg_data",
         "datastation_plan_id": "399"
     },
     {
@@ -572,7 +572,7 @@
         "validity": "7 days",
         "cost_price": 975.0,
         "selling_price": 985.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_cg_data",
         "datastation_plan_id": "400"
     },
     {
@@ -584,7 +584,7 @@
         "validity": "7 days",
         "cost_price": 1625.0,
         "selling_price": 1635.0,
-        "datastation_network_id": "2",
+        "datastation_network_id": "glo_cg_data",
         "datastation_plan_id": "401"
     },
     {
@@ -596,7 +596,7 @@
         "validity": "1 days",
         "cost_price": 490.0,
         "selling_price": 500.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "215"
     },
     {
@@ -608,7 +608,7 @@
         "validity": "2 days",
         "cost_price": 990.0,
         "selling_price": 1000.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "218"
     },
     {
@@ -620,7 +620,7 @@
         "validity": "7 days",
         "cost_price": 2460.0,
         "selling_price": 2470.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "219"
     },
     {
@@ -632,7 +632,7 @@
         "validity": "30 days",
         "cost_price": 17640.0,
         "selling_price": 17650.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "300"
     },
     {
@@ -644,7 +644,7 @@
         "validity": "7 days",
         "cost_price": 3430.0,
         "selling_price": 3440.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "302"
     },
     {
@@ -656,7 +656,7 @@
         "validity": "30 days",
         "cost_price": 1680.0,
         "selling_price": 1690.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme2_data",
         "datastation_plan_id": "310"
     },
     {
@@ -668,7 +668,7 @@
         "validity": "1 day",
         "cost_price": 196.0,
         "selling_price": 206.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "320"
     },
     {
@@ -680,7 +680,7 @@
         "validity": "7 days (Pulse)",
         "cost_price": 735.0,
         "selling_price": 745.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "321"
     },
     {
@@ -692,7 +692,7 @@
         "validity": "7 days",
         "cost_price": 2450.0,
         "selling_price": 2460.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "327"
     },
     {
@@ -704,7 +704,7 @@
         "validity": "2 days",
         "cost_price": 735.0,
         "selling_price": 745.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "328"
     },
     {
@@ -716,7 +716,7 @@
         "validity": "2 days",
         "cost_price": 882.0,
         "selling_price": 892.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "329"
     },
     {
@@ -728,7 +728,7 @@
         "validity": "3 days",
         "cost_price": 441.0,
         "selling_price": 451.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "334"
     },
     {
@@ -740,7 +740,7 @@
         "validity": "30 days",
         "cost_price": 1470.0,
         "selling_price": 1480.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "335"
     },
     {
@@ -752,7 +752,7 @@
         "validity": "30 days",
         "cost_price": 1980.0,
         "selling_price": 1990.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "336"
     },
     {
@@ -764,7 +764,7 @@
         "validity": "30 days +10 Mins call",
         "cost_price": 6370.0,
         "selling_price": 6380.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "339"
     },
     {
@@ -776,7 +776,7 @@
         "validity": "7 days",
         "cost_price": 785.0,
         "selling_price": 795.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "340"
     },
     {
@@ -788,7 +788,7 @@
         "validity": "(XtraSpecial) 30 days",
         "cost_price": 4900.0,
         "selling_price": 4910.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "343"
     },
     {
@@ -800,7 +800,7 @@
         "validity": "30 days +2gb YT",
         "cost_price": 5390.0,
         "selling_price": 5400.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "345"
     },
     {
@@ -812,7 +812,7 @@
         "validity": "30 days(+10mins+2gb YT)",
         "cost_price": 4410.0,
         "selling_price": 4420.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "346"
     },
     {
@@ -824,7 +824,7 @@
         "validity": "1 day",
         "cost_price": 98.0,
         "selling_price": 108.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "348"
     },
     {
@@ -836,7 +836,7 @@
         "validity": "30 days +5mins +2gb Night",
         "cost_price": 2450.0,
         "selling_price": 2460.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "349"
     },
     {
@@ -848,7 +848,7 @@
         "validity": "7 days",
         "cost_price": 490.0,
         "selling_price": 500.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "350"
     },
     {
@@ -860,7 +860,7 @@
         "validity": "30 days +N1500 for call+100SM",
         "cost_price": 1470.0,
         "selling_price": 1480.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "358"
     },
     {
@@ -872,7 +872,7 @@
         "validity": "7 days",
         "cost_price": 980.0,
         "selling_price": 990.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "360"
     },
     {
@@ -884,7 +884,7 @@
         "validity": "2 days",
         "cost_price": 588.0,
         "selling_price": 598.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "361"
     },
     {
@@ -896,7 +896,7 @@
         "validity": "1 days",
         "cost_price": 490.0,
         "selling_price": 500.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "362"
     },
     {
@@ -908,7 +908,7 @@
         "validity": "30 days",
         "cost_price": 2800.0,
         "selling_price": 2810.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme2_data",
         "datastation_plan_id": "366"
     },
     {
@@ -920,7 +920,7 @@
         "validity": "30 days",
         "cost_price": 7350.0,
         "selling_price": 7360.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "369"
     },
     {
@@ -932,7 +932,7 @@
         "validity": "30 days",
         "cost_price": 10780.0,
         "selling_price": 10790.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "370"
     },
     {
@@ -944,7 +944,7 @@
         "validity": "30 days",
         "cost_price": 3430.0,
         "selling_price": 3440.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "371"
     },
     {
@@ -956,7 +956,7 @@
         "validity": "30 days",
         "cost_price": 3100.0,
         "selling_price": 3110.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "372"
     },
     {
@@ -968,7 +968,7 @@
         "validity": "30days",
         "cost_price": 1120.0,
         "selling_price": 1130.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme2_data",
         "datastation_plan_id": "403"
     },
     {
@@ -980,7 +980,7 @@
         "validity": "7 days",
         "cost_price": 1485.0,
         "selling_price": 1495.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "407"
     },
     {
@@ -992,7 +992,7 @@
         "validity": "7 days",
         "cost_price": 3465.0,
         "selling_price": 3475.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "408"
     },
     {
@@ -1004,7 +1004,7 @@
         "validity": "7 days",
         "cost_price": 560.0,
         "selling_price": 570.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme2_data",
         "datastation_plan_id": "409"
     },
     {
@@ -1016,7 +1016,7 @@
         "validity": "30 days",
         "cost_price": 33950.0,
         "selling_price": 33960.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "414"
     },
     {
@@ -1028,7 +1028,7 @@
         "validity": "7 days",
         "cost_price": 785.0,
         "selling_price": 795.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "415"
     },
     {
@@ -1040,7 +1040,7 @@
         "validity": "5 day",
         "cost_price": 400.0,
         "selling_price": 410.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme2_data",
         "datastation_plan_id": "416"
     },
     {
@@ -1052,7 +1052,7 @@
         "validity": "30 days",
         "cost_price": 610.0,
         "selling_price": 620.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme2_data",
         "datastation_plan_id": "417"
     },
     {
@@ -1064,7 +1064,7 @@
         "validity": "1 day",
         "cost_price": 235.0,
         "selling_price": 245.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "419"
     },
     {
@@ -1076,7 +1076,7 @@
         "validity": "1 day",
         "cost_price": 580.0,
         "selling_price": 590.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "420"
     },
     {
@@ -1088,7 +1088,7 @@
         "validity": "1 day",
         "cost_price": 235.0,
         "selling_price": 245.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "423"
     },
     {
@@ -1100,7 +1100,7 @@
         "validity": "1 day",
         "cost_price": 580.0,
         "selling_price": 590.0,
-        "datastation_network_id": "1",
+        "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "424"
     }
 ]
