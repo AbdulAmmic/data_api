@@ -5,13 +5,15 @@ from utils.responses import success_response, error_response
 from utils.security import auth_required
 from utils.helpers import uid, kobo_to_naira, naira_to_kobo
 from utils.pricing import get_price_or_fail
-from utils.peyflex import (
+from utils.datastation import (
     buy_data,
     buy_airtime_topup,
     buy_bill_payment,
     buy_cable_subscription,
     validate_meter,
-    validate_iuc
+    validate_iuc,
+    generate_airtime_pin,
+    generate_epin
 )
 
 # ---------------------------------------------------------
@@ -38,8 +40,8 @@ def register_service_routes(bp):
             amount_kobo=amount_kobo,
             status="SUCCESS",
             narration=narration,
-            provider="PEYFLEX",
-            reference=uid("pf_")
+            provider="DATASTATION",
+            reference=uid("ds_")
         )
         db.session.add(tx)
         db.session.commit()
@@ -67,7 +69,7 @@ def register_service_routes(bp):
             service=service,
             amount_kobo=amount_kobo,
             status="PENDING",
-            provider="PEYFLEX",
+            provider="DATASTATION",
             request_payload=json.dumps(payload)
         )
         db.session.add(purchase)
@@ -253,7 +255,10 @@ def register_service_routes(bp):
         payload = {
             "network": net_id,
             "amount": amount,
-            "mobile_number": phone
+            "mobile_number": phone,
+            "Ported_number": True,
+            "airtime_type": "VTU",
+            "ref": uid("ref_")
         }
 
         purchase = _create_purchase(user, "AIRTIME", amount_kobo, payload)
@@ -263,7 +268,7 @@ def register_service_routes(bp):
              db.session.commit()
              return err
 
-        status, body = buy_airtime_topup(payload)
+        status, body = buy_airtime(payload)
         parsed_body = _safe_json(body)
         purchase.response_payload = body # Store raw for history
         if status not in (200, 201):
@@ -307,15 +312,13 @@ def register_service_routes(bp):
             
         amount_kobo = naira_to_kobo(float(amount))
         
-        m_type_val = "postpaid" if (mtype or "prepaid").lower() == "postpaid" else "prepaid"
+        m_type_val = 2 if (mtype or "prepaid").lower() == "postpaid" else 1
 
         payload = {
-            "identifier": "electricity",
-            "plan": disco_id,
-            "amount": amount,
-            "meter": meter, 
-            "type": m_type_val,
-            "phone": "08000000000" # default if user phone is missing on electricity
+            "disco_name": int(disco_conf["disco_id"]) if str(disco_conf["disco_id"]).isdigit() else disco_conf["disco_id"],
+            "amount": int(float(amount)),
+            "meter_number": meter, 
+            "MeterType": m_type_val
         }
 
         purchase = _create_purchase(user, "ELECTRICITY", amount_kobo, payload)
@@ -368,11 +371,9 @@ def register_service_routes(bp):
         amount_kobo = naira_to_kobo(amount_naira)
 
         payload = {
-            "identifier": plan_conf["cable_id"], # e.g., 'gotv', 'dstv'
-            "plan": plan_conf["package_id"],     # e.g., 'max', 'yanga'
-            "iuc": iuc,
-            "amount": amount_naira,
-            "phone": "08000000000"
+            "cablename": int(plan_conf["cable_id"]), # 1, 2, 3
+            "cableplan": int(plan_conf["package_id"]), # 2, 6, etc
+            "smart_card_number": iuc
         }
 
         purchase = _create_purchase(user, "CABLE", amount_kobo, payload)
@@ -402,7 +403,55 @@ def register_service_routes(bp):
     @bp.post("/education/epin")
     @auth_required
     def epin_route():
-        return error_response("EPIN is currently not supported by the new provider.", 400)
+        user = request.user
+        data = request.get_json(force=True)
+        
+        exam_id = data.get("exam_type") # e.g. "waec"
+        quantity = data.get("quantity", 1)
+        
+        if not exam_id: return error_response("exam_type required")
+
+        transaction_pin = data.get("transaction_pin")
+        if not user.check_pin(transaction_pin):
+            return error_response("Invalid Transaction PIN", 403)
+
+        plan_conf = get_education_plan(exam_id)
+        if not plan_conf:
+             return error_response("Invalid Exam Type", 400)
+
+        amount_naira = plan_conf["selling_price"] * int(quantity)
+        amount_kobo = naira_to_kobo(amount_naira)
+
+        payload = {
+            "exam_name": plan_conf["datastation_id"], # WAEC/NECO
+            "quantity": int(quantity)
+        }
+        
+        # If provider doesn't support bulk, we might need loop. 
+        # Assuming provider supports single check mostly. 
+        # Postman docs usually say "quantity" or check if it's 1 by 1.
+        # Assuming 1 for now or provider handles it.
+
+        purchase = _create_purchase(user, "EPIN", amount_kobo, payload)
+        debit, err = _debit_wallet(user, amount_kobo, "Education PIN")
+        if err:
+             purchase.status = "FAILED"; db.session.commit(); return err
+        
+        status, body = generate_epin(payload)
+        parsed_body = _safe_json(body)
+
+        purchase.response_payload = body
+        
+        if status not in (200, 201):
+             purchase.status = "FAILED"; db.session.commit()
+             _refund_wallet(user, amount_kobo, "Refund: PIN Generation failed")
+             return error_response("PIN Generation failed", 502, {"provider": parsed_body})
+        
+        purchase.status = "SUCCESS"; db.session.commit()
+        return success_response({
+            "purchase_id": purchase.id,
+            "provider_response": parsed_body
+        }, "PIN generated")
 
     # =====================================================
     # DATA PURCHASE (CONFIG BASED)
@@ -420,29 +469,35 @@ def register_service_routes(bp):
         if not network or not plan_id or not phone:
             return error_response("network, plan, phone required")
 
-        # The frontend now dynamically queries Peyflex for plans and sends exact Peyflex network & plan codes.
-        # e.g., network='mtn_gifting_data', plan='M500MBS'
-        # We bypass strict config plan_id lookups because Peyflex codes change dynamically.
-        amount = data.get("amount") # Add amount to payload from frontend since we bypass DB lookups for prices
+        # Frontend logic: 'mtn-sme-1gb' -> sends network='mtn', plan='sme-1gb'
+        # But our config ID is 'mtn-sme-1gb'. Reconstruct or check how frontend sends.
+        # Frontend: const planCode = selectedPlan?.id.replace(`${network}-`, "") 
+        # So we might receive "sme-1gb".
+        # Let's verify against our config ID.
+        full_plan_id = f"{network}-{plan_id}"
+        
+        plan_config = get_plan_by_id(full_plan_id)
+        if not plan_config:
+            # Try direct match just in case
+            plan_config = get_plan_by_id(plan_id)
+        
+        if not plan_config:
+             return error_response(f"Data plan not found: {full_plan_id}", 400)
 
-        if not amount:
-            return error_response("amount is required", 400)
-            
         transaction_pin = data.get("transaction_pin")
         if not user.check_pin(transaction_pin):
             return error_response("Invalid Transaction PIN", 403)
 
-        # Price in Naira from frontend -> Convert to Kobo
-        try:
-             amount_naira = float(amount)
-        except:
-             return error_response("Invalid amount", 400)
+        # Price in Naira from config -> Convert to Kobo for Wallet
+        amount_naira = plan_config["selling_price"]
         amount_kobo = naira_to_kobo(amount_naira)
 
         payload = {
-            "network": network, 
-            "plan_code": plan_id,  
-            "mobile_number": phone
+            "network": plan_config["datastation_network_id"], # Send mapped ID
+            "plan": plan_config["datastation_plan_id"],      # Send mapped ID
+            "mobile_number": phone,
+            "Ported_number": True,
+            "reference": uid("ref_")
         }
 
         purchase = _create_purchase(user, "DATA", amount_kobo, payload)
@@ -556,7 +611,60 @@ def register_service_routes(bp):
     @bp.post("/airtime/pin")
     @auth_required
     def airtime_pin_route():
-         return error_response("Airtime PIN is currently not supported by the new provider.", 400)
+        user = request.user
+        data = request.get_json(force=True)
+
+        network = data.get("network")
+        network_amount = data.get("network_amount")
+        quantity = data.get("quantity")
+        name_on_card = data.get("name_on_card")
+
+        if not network or not network_amount or not quantity or not name_on_card:
+            return error_response("network, network_amount, quantity, name_on_card required")
+
+        transaction_pin = data.get("transaction_pin")
+        if not user.check_pin(transaction_pin):
+            return error_response("Invalid Transaction PIN", 403)
+
+        provider_code = f"{network}_{network_amount}"
+        price = get_price_or_fail("AIRTIME_PIN", provider_code)
+        if not price:
+            return error_response("Airtime PIN price not available", 400)
+
+        amount_kobo = price.selling_price_kobo() * int(quantity)
+
+        payload = {
+            "network": int(network),
+            "network_amount": int(network_amount),
+            "quantity": int(quantity),
+            "name_on_card": name_on_card
+        }
+
+        purchase = _create_purchase(user, "AIRTIME_PIN", amount_kobo, payload)
+        debit, err = _debit_wallet(user, amount_kobo, "Airtime PIN")
+        if err:
+            purchase.status = "FAILED"
+            db.session.commit()
+            return err
+
+        status, body = generate_airtime_pin(**payload)
+        parsed_body = _safe_json(body)
+        purchase.response_payload = body
+
+        if status not in (200, 201):
+            purchase.status = "FAILED"
+            db.session.commit()
+            _refund_wallet(user, amount_kobo, "Refund: Airtime PIN failed")
+            return error_response("Airtime PIN failed", 502, {"provider": parsed_body})
+
+        purchase.status = "SUCCESS"
+        db.session.commit()
+
+        return success_response({
+            "purchase_id": purchase.id,
+            "amount_naira": kobo_to_naira(amount_kobo),
+            "provider_response": parsed_body
+        }, "Airtime PIN generated")
 
 
 
