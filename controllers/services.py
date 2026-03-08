@@ -247,13 +247,16 @@ def register_service_routes(bp):
         # Config map for Network IDs? 
         # MTN=1, GLO=2, 9MOBILE=3, AIRTEL=4? 
         # Or Just send String? DataStation docs say ID.
-        net_map = {"mtn": "1", "glo": "2", "9mobile": "3", "airtel": "4"}
-        net_id = net_map.get(network.lower(), network)
+        net_map = {"mtn": 1, "glo": 2, "9mobile": 3, "airtel": 4}
+        try:
+            net_id = int(network)
+        except (ValueError, TypeError):
+            net_id = net_map.get(str(network).lower(), 1)
 
         amount_kobo = naira_to_kobo(float(amount))
         
         payload = {
-            "network": int(net_id),
+            "network": net_id,
             "amount": int(float(amount)),
             "mobile_number": phone,
             "Ported_number": True,
@@ -492,8 +495,14 @@ def register_service_routes(bp):
         amount_naira = plan_config["selling_price"]
         amount_kobo = naira_to_kobo(amount_naira)
 
+        net_map = {"mtn": 1, "glo": 2, "9mobile": 3, "airtel": 4}
+        try:
+            net_id = int(plan_config["datastation_network_id"])
+        except (ValueError, TypeError):
+            net_id = net_map.get(str(network).lower(), 1)
+
         payload = {
-            "network": int(plan_config["datastation_network_id"]), # Send mapped ID
+            "network": net_id, # Send mapped ID
             "plan": int(plan_config["datastation_plan_id"]),      # Send mapped ID
             "mobile_number": phone,
             "Ported_number": True,
@@ -566,11 +575,14 @@ def register_service_routes(bp):
             amount_kobo = naira_to_kobo(float(amount))
 
         # Map network to ID
-        net_map = {"mtn": "1", "glo": "2", "9mobile": "3", "airtel": "4"}
-        net_id = net_map.get(network.lower(), network)
+        net_map = {"mtn": 1, "glo": 2, "9mobile": 3, "airtel": 4}
+        try:
+            net_id = int(network)
+        except (ValueError, TypeError):
+            net_id = net_map.get(str(network).lower(), 1)
 
         payload = {
-            "network": int(net_id),
+            "network": net_id,
             "amount": int(float(amount)),
             "mobile_number": phone,
             "Ported_number": True,
