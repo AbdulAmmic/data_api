@@ -253,8 +253,8 @@ def register_service_routes(bp):
         amount_kobo = naira_to_kobo(float(amount))
         
         payload = {
-            "network": net_id,
-            "amount": amount,
+            "network": int(net_id),
+            "amount": int(float(amount)),
             "mobile_number": phone,
             "Ported_number": True,
             "airtime_type": "VTU",
@@ -493,8 +493,8 @@ def register_service_routes(bp):
         amount_kobo = naira_to_kobo(amount_naira)
 
         payload = {
-            "network": plan_config["datastation_network_id"], # Send mapped ID
-            "plan": plan_config["datastation_plan_id"],      # Send mapped ID
+            "network": int(plan_config["datastation_network_id"]), # Send mapped ID
+            "plan": int(plan_config["datastation_plan_id"]),      # Send mapped ID
             "mobile_number": phone,
             "Ported_number": True,
             "reference": uid("ref_")
@@ -570,8 +570,8 @@ def register_service_routes(bp):
         net_id = net_map.get(network.lower(), network)
 
         payload = {
-            "network": net_id,
-            "amount": amount,
+            "network": int(net_id),
+            "amount": int(float(amount)),
             "mobile_number": phone,
             "Ported_number": True,
             "airtime_type": "VTU"
