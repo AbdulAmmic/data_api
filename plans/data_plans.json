@@ -120,18 +120,6 @@
         "datastation_plan_id": "281"
     },
     {
-        "id": "airtel-corporate-1.0gb-367",
-        "network": "airtel",
-        "type": "corporate",
-        "name": "AIRTEL Corporate Gifting 1.0 GB 3 days (Social)",
-        "size": "1.0 GB",
-        "validity": "3 days (Social)",
-        "cost_price": 345.0,
-        "selling_price": 360.0,
-        "datastation_network_id": "airtel_cg_data",
-        "datastation_plan_id": "367"
-    },
-    {
         "id": "airtel-sme-1.0gb-374",
         "network": "airtel",
         "type": "sme",
@@ -204,18 +192,6 @@
         "datastation_plan_id": "380"
     },
     {
-        "id": "airtel-corporate-10.0gb-381",
-        "network": "airtel",
-        "type": "corporate",
-        "name": "AIRTEL Corporate Gifting 10.0 GB 30 days",
-        "size": "10.0 GB",
-        "validity": "30 days",
-        "cost_price": 4045.0,
-        "selling_price": 4060.0,
-        "datastation_network_id": "airtel_cg_data",
-        "datastation_plan_id": "381"
-    },
-    {
         "id": "airtel-sme-1.5gb-382",
         "network": "airtel",
         "type": "sme",
@@ -250,42 +226,6 @@
         "selling_price": 1560.0,
         "datastation_network_id": "airtel_sme_data",
         "datastation_plan_id": "384"
-    },
-    {
-        "id": "airtel-corporate-5.0gb-385",
-        "network": "airtel",
-        "type": "corporate",
-        "name": "AIRTEL Corporate Gifting 5.0 GB 7 days",
-        "size": "5.0 GB",
-        "validity": "7 days",
-        "cost_price": 1545.0,
-        "selling_price": 1560.0,
-        "datastation_network_id": "airtel_cg_data",
-        "datastation_plan_id": "385"
-    },
-    {
-        "id": "airtel-corporate-2.0gb-386",
-        "network": "airtel",
-        "type": "corporate",
-        "name": "AIRTEL Corporate Gifting 2.0 GB 2 days",
-        "size": "2.0 GB",
-        "validity": "2 days",
-        "cost_price": 800.0,
-        "selling_price": 815.0,
-        "datastation_network_id": "airtel_cg_data",
-        "datastation_plan_id": "386"
-    },
-    {
-        "id": "airtel-corporate-1.5gb-387",
-        "network": "airtel",
-        "type": "corporate",
-        "name": "AIRTEL Corporate Gifting 1.5 GB 2 days",
-        "size": "1.5 GB",
-        "validity": "2 days",
-        "cost_price": 645.0,
-        "selling_price": 660.0,
-        "datastation_network_id": "airtel_cg_data",
-        "datastation_plan_id": "387"
     },
     {
         "id": "airtel-sme-600.0mb-404",
@@ -612,18 +552,6 @@
         "datastation_plan_id": "218"
     },
     {
-        "id": "mtn-gifting-6.0gb-219",
-        "network": "mtn",
-        "type": "gifting",
-        "name": "MTN Gifting 6.0 GB 7 days",
-        "size": "6.0 GB",
-        "validity": "7 days",
-        "cost_price": 2460.0,
-        "selling_price": 2475.0,
-        "datastation_network_id": "mtn_gifting_data",
-        "datastation_plan_id": "219"
-    },
-    {
         "id": "mtn-gifting-75.0gb-300",
         "network": "mtn",
         "type": "gifting",
@@ -744,18 +672,6 @@
         "datastation_plan_id": "335"
     },
     {
-        "id": "mtn-sme-3.0gb-336",
-        "network": "mtn",
-        "type": "sme",
-        "name": "MTN Sme 3.0 GB 30 days",
-        "size": "3.0 GB",
-        "validity": "30 days",
-        "cost_price": 1980.0,
-        "selling_price": 1995.0,
-        "datastation_network_id": "mtn_sme_data",
-        "datastation_plan_id": "336"
-    },
-    {
         "id": "mtn-sme-16.5gb-339",
         "network": "mtn",
         "type": "sme",
@@ -766,18 +682,6 @@
         "selling_price": 6385.0,
         "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "339"
-    },
-    {
-        "id": "mtn-sme-1.0gb-340",
-        "network": "mtn",
-        "type": "sme",
-        "name": "MTN Sme 1.0 GB 7 days",
-        "size": "1.0 GB",
-        "validity": "7 days",
-        "cost_price": 785.0,
-        "selling_price": 800.0,
-        "datastation_network_id": "mtn_sme_data",
-        "datastation_plan_id": "340"
     },
     {
         "id": "mtn-gifting-14.5gb-343",
@@ -948,18 +852,6 @@
         "datastation_plan_id": "371"
     },
     {
-        "id": "mtn-sme-5.0gb-372",
-        "network": "mtn",
-        "type": "sme",
-        "name": "MTN Sme 5.0 GB 30 days",
-        "size": "5.0 GB",
-        "validity": "30 days",
-        "cost_price": 3100.0,
-        "selling_price": 3115.0,
-        "datastation_network_id": "mtn_sme_data",
-        "datastation_plan_id": "372"
-    },
-    {
         "id": "mtn-sme2-2.0gb-403",
         "network": "mtn",
         "type": "sme2",
@@ -984,18 +876,6 @@
         "datastation_plan_id": "407"
     },
     {
-        "id": "mtn-sme-11.0gb-408",
-        "network": "mtn",
-        "type": "sme",
-        "name": "MTN Sme 11.0 GB 7 days",
-        "size": "11.0 GB",
-        "validity": "7 days",
-        "cost_price": 3465.0,
-        "selling_price": 3480.0,
-        "datastation_network_id": "mtn_sme_data",
-        "datastation_plan_id": "408"
-    },
-    {
         "id": "mtn-sme2-1.0gb-409",
         "network": "mtn",
         "type": "sme2",
@@ -1018,18 +898,6 @@
         "selling_price": 33965.0,
         "datastation_network_id": "mtn_gifting_data",
         "datastation_plan_id": "414"
-    },
-    {
-        "id": "mtn-gifting-1.0gb-415",
-        "network": "mtn",
-        "type": "gifting",
-        "name": "MTN Gifting 1.0 GB 7 days",
-        "size": "1.0 GB",
-        "validity": "7 days",
-        "cost_price": 785.0,
-        "selling_price": 800.0,
-        "datastation_network_id": "mtn_gifting_data",
-        "datastation_plan_id": "415"
     },
     {
         "id": "mtn-sme2-500.0mb-416",
@@ -1078,29 +946,5 @@
         "selling_price": 595.0,
         "datastation_network_id": "mtn_sme_data",
         "datastation_plan_id": "420"
-    },
-    {
-        "id": "mtn-gifting-1.0gb-423",
-        "network": "mtn",
-        "type": "gifting",
-        "name": "MTN Gifting 1.0 GB 1 day",
-        "size": "1.0 GB",
-        "validity": "1 day",
-        "cost_price": 235.0,
-        "selling_price": 250.0,
-        "datastation_network_id": "mtn_gifting_data",
-        "datastation_plan_id": "423"
-    },
-    {
-        "id": "mtn-gifting-2.5gb-424",
-        "network": "mtn",
-        "type": "gifting",
-        "name": "MTN Gifting 2.5 GB 1 day",
-        "size": "2.5 GB",
-        "validity": "1 day",
-        "cost_price": 580.0,
-        "selling_price": 595.0,
-        "datastation_network_id": "mtn_gifting_data",
-        "datastation_plan_id": "424"
     }
 ]
