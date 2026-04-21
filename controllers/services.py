@@ -5,7 +5,7 @@ from utils.responses import success_response, error_response
 from utils.security import auth_required
 from utils.helpers import uid, kobo_to_naira, naira_to_kobo
 from utils.pricing import get_price_or_fail
-from utils.datastation import (
+from utils.bilalsadasub import (
     buy_data,
     buy_airtime_topup,
     buy_bill_payment,
@@ -104,70 +104,66 @@ def register_service_routes(bp):
             print(f"Error loading {filename}: {e}")
             return []
 
-    DATA_PLANS = load_json_plans("data_plans.json")
-    CABLE_PLANS = load_json_plans("cable_plans.json")
-    
-    # Helpers for lookups
-    def get_plan_by_id(plan_id):
-        # Reloading here if we want dynamic updates without restart? 
-        # For performance, maybe better to load once. User wants "simple".
-        # Let's check if we should reload every time or just use the variable.
-        # User said "then me use them", implying they edit and it works.
-        # So reload might be better in the function, but for now lets keep global load at route reg time or inside route?
-        # If I put it inside register_service_routes, it runs once at startup basically.
-        # Let's move loading INSIDE the routes or a getter helper to allow hot-updates.
-        return next((p for p in DATA_PLANS if p["id"] == plan_id), None)
-
-    def get_cable_plan(plan_id):
-        return next((p for p in CABLE_PLANS if p["id"] == plan_id), None)
-
-    from plans.electricity_plans import ELECTRICITY_DISCOS, get_disco
-    from plans.education_plans import EDUCATION_PLANS, get_education_plan
+    # helpers for lookups
+    def get_price_item(item_id):
+        return db.session.get(PriceItem, item_id)
 
     @bp.get("/plans")
     def get_plans():
         service_type = request.args.get("service") # DATA, CABLE, EPIN
         
         if service_type == "DATA":
+            plans = PriceItem.query.filter_by(service="DATA", is_active=True).all()
             data = []
-            for p in DATA_PLANS:
+            for p in plans:
                 data.append({
-                    "id": p["id"],
+                    "id": p.id,
                     "service": "DATA",
-                    "amount": p["selling_price"],
-                    "name": p["name"],
-                    "network": p["network"],
-                    "plan_type": p["type"],
-                    "size": p.get("size", ""),
-                    "validity": p.get("validity", "")
+                    "amount": p.selling_price_kobo() / 100,
+                    "name": p.name,
+                    "network": p.network,
+                    "plan_type": p.plan_type,
+                    "size": "", # size is included in name now
+                    "validity": p.validity
                 })
             return success_response(data)
 
         elif service_type == "CABLE":
+            plans = PriceItem.query.filter_by(service="CABLE", is_active=True).all()
             data = []
-            for p in CABLE_PLANS:
+            for p in plans:
                 data.append({
-                    "id": p["id"],
+                    "id": p.id,
                     "service": "CABLE",
-                    "amount": p["amount"], # This is selling price (backend 'amount')
-                    "name": p["name"],
-                    "cable_provider": p["cable_id"] # ID for filtering?
+                    "amount": p.selling_price_kobo() / 100,
+                    "name": p.name,
+                    "cable_provider": p.network # We stored cable type in network field
                 })
             return success_response(data)
 
         elif service_type == "EPIN":
+            plans = PriceItem.query.filter_by(service="EPIN", is_active=True).all()
             data = []
-            for p in EDUCATION_PLANS:
+            for p in plans:
                 data.append({
-                    "id": p["id"],
+                    "id": p.id,
                     "service": "EPIN",
-                    "amount": p["selling_price"],
-                    "name": p["label"]
+                    "amount": p.selling_price_kobo() / 100,
+                    "name": p.name
                 })
             return success_response(data)
             
         elif service_type == "ELECTRICITY":
-             return success_response(ELECTRICITY_DISCOS)
+            plans = PriceItem.query.filter_by(service="ELECTRICITY", is_active=True).all()
+            data = []
+            for p in plans:
+                data.append({
+                    "id": p.id,
+                    "service": "ELECTRICITY",
+                    "name": p.name,
+                    "disco_id": p.provider_code
+                })
+            return success_response(data)
 
         return success_response([])
 
@@ -244,10 +240,8 @@ def register_service_routes(bp):
         if not user.check_pin(transaction_pin):
             return error_response("Invalid Transaction PIN", 403)
 
-        # Config map for Network IDs? 
-        # MTN=1, GLO=2, 9MOBILE=3, AIRTEL=4? 
-        # Or Just send String? DataStation docs say ID.
-        net_map = {"mtn": 1, "glo": 2, "9mobile": 3, "airtel": 4}
+        # Bilalsadasub Network IDs: MTN=1, AIRTEL=2, GLO=3, 9MOBILE=4
+        net_map = {"mtn": 1, "airtel": 2, "glo": 3, "9mobile": 4}
         try:
             net_id = int(network)
         except (ValueError, TypeError):
@@ -258,10 +252,9 @@ def register_service_routes(bp):
         payload = {
             "network": net_id,
             "amount": int(float(amount)),
-            "mobile_number": phone,
-            "Ported_number": True,
-            "airtime_type": "VTU",
-            "ref": uid("ref_")
+            "phone": phone,
+            "plan_type": "VTU",
+            "request-id": uid("ref_")
         }
 
         purchase = _create_purchase(user, "AIRTIME", amount_kobo, payload)
@@ -271,7 +264,7 @@ def register_service_routes(bp):
              db.session.commit()
              return err
 
-        status, body = buy_airtime(payload)
+        status, body = buy_airtime_topup(payload)
         parsed_body = _safe_json(body)
         purchase.response_payload = body # Store raw for history
         if status not in (200, 201):
@@ -309,19 +302,20 @@ def register_service_routes(bp):
         if not user.check_pin(transaction_pin):
             return error_response("Invalid Transaction PIN", 403)
             
-        disco_conf = get_disco(disco_id)
-        if not disco_conf:
-            return error_response("Invalid Disco ID", 400)
+        # disco_id is now the DB ID from PriceItem
+        plan_item = get_price_item(disco_id)
+        if not plan_item:
+            return error_response("Invalid Disco selected", 400)
             
         amount_kobo = naira_to_kobo(float(amount))
-        
-        m_type_val = 2 if (mtype or "prepaid").lower() == "postpaid" else 1
+        amount_naira = float(amount)
 
         payload = {
-            "disco_name": int(disco_conf["disco_id"]) if str(disco_conf["disco_id"]).isdigit() else disco_conf["disco_id"],
+            "disco": int(plan_item.provider_code), # Bilal Disco ID
             "amount": int(float(amount)),
             "meter_number": meter, 
-            "MeterType": m_type_val
+            "meter_type": (mtype or "prepaid").lower(),
+            "request-id": uid("ref_")
         }
 
         purchase = _create_purchase(user, "ELECTRICITY", amount_kobo, payload)
@@ -365,18 +359,19 @@ def register_service_routes(bp):
         if not user.check_pin(transaction_pin):
             return error_response("Invalid Transaction PIN", 403)
 
-        plan_conf = get_cable_plan(plan_id)
-        if not plan_conf:
-             return error_response("Invalid Cable Plan", 400)
+        # plan_id is now the DB ID from PriceItem
+        plan_item = get_price_item(plan_id)
+        if not plan_item:
+             return error_response("Invalid Cable Plan selected", 400)
 
-        # Selling Price = amount (from config it's selling price)
-        amount_naira = plan_conf["amount"]
-        amount_kobo = naira_to_kobo(amount_naira)
+        amount_kobo = plan_item.selling_price_kobo()
+        amount_naira = amount_kobo / 100
 
         payload = {
-            "cablename": int(plan_conf["cable_id"]), # 1, 2, 3
-            "cableplan": int(plan_conf["package_id"]), # 2, 6, etc
-            "smart_card_number": iuc
+            "cable": int(plan_item.network) if str(plan_item.network).isdigit() else 1, # ID was saved in network field for Cable
+            "cable_plan": int(plan_item.provider_code), # Bilal Plan ID
+            "iuc": iuc,
+            "request-id": uid("ref_")
         }
 
         purchase = _create_purchase(user, "CABLE", amount_kobo, payload)
@@ -418,16 +413,18 @@ def register_service_routes(bp):
         if not user.check_pin(transaction_pin):
             return error_response("Invalid Transaction PIN", 403)
 
-        plan_conf = get_education_plan(exam_id)
-        if not plan_conf:
-             return error_response("Invalid Exam Type", 400)
+        # exam_id is now the DB ID from PriceItem
+        plan_item = get_price_item(exam_id)
+        if not plan_item:
+             return error_response("Invalid Exam Type selected", 400)
 
-        amount_naira = plan_conf["selling_price"] * int(quantity)
-        amount_kobo = naira_to_kobo(amount_naira)
+        amount_kobo = plan_item.selling_price_kobo() * int(quantity)
+        amount_naira = amount_kobo / 100
 
         payload = {
-            "exam_name": plan_conf["datastation_id"], # WAEC/NECO
-            "quantity": int(quantity)
+            "exam": int(plan_item.provider_code), # Bilal Exam ID
+            "quantity": int(quantity),
+            "request-id": uid("ref_")
         }
         
         # If provider doesn't support bulk, we might need loop. 
@@ -472,30 +469,21 @@ def register_service_routes(bp):
         if not network or not plan_id or not phone:
             return error_response("network, plan, phone required")
 
-        # Frontend logic: 'mtn-sme-1gb' -> sends network='mtn', plan='sme-1gb'
-        # But our config ID is 'mtn-sme-1gb'. Reconstruct or check how frontend sends.
-        # Frontend: const planCode = selectedPlan?.id.replace(`${network}-`, "") 
-        # So we might receive "sme-1gb".
-        # Let's verify against our config ID.
-        full_plan_id = f"{network}-{plan_id}"
-        
-        plan_config = get_plan_by_id(full_plan_id)
-        if not plan_config:
-            # Try direct match just in case
-            plan_config = get_plan_by_id(plan_id)
-        
-        if not plan_config:
-             return error_response(f"Data plan not found: {full_plan_id}", 400)
+        # plan_id is now the DB ID from PriceItem
+        plan_item = get_price_item(plan_id)
+        if not plan_item:
+             return error_response(f"Data plan not found: {plan_id}", 400)
 
         transaction_pin = data.get("transaction_pin")
         if not user.check_pin(transaction_pin):
             return error_response("Invalid Transaction PIN", 403)
 
-        # Price in Naira from config -> Convert to Kobo for Wallet
-        amount_naira = plan_config["selling_price"]
-        amount_kobo = naira_to_kobo(amount_naira)
+        # Price in Naira from DB -> Already includes 5% markup via model logic
+        amount_kobo = plan_item.selling_price_kobo()
+        amount_naira = amount_kobo / 100
 
-        net_map = {"mtn": 1, "glo": 2, "9mobile": 3, "airtel": 4}
+        # Bilalsadasub Network IDs: MTN=1, AIRTEL=2, GLO=3, 9MOBILE=4
+        net_map = {"mtn": 1, "airtel": 2, "glo": 3, "9mobile": 4}
         try:
             net_id = int(plan_config["datastation_network_id"])
         except (ValueError, TypeError):
@@ -503,10 +491,10 @@ def register_service_routes(bp):
 
         payload = {
             "network": net_id, # Send mapped ID
-            "plan": int(plan_config["datastation_plan_id"]),      # Send mapped ID
-            "mobile_number": phone,
-            "Ported_number": True,
-            "reference": uid("ref_")
+            "data_plan": int(plan_config["datastation_plan_id"]),      # Send mapped ID
+            "phone": phone,
+            "bypass": False,
+            "request-id": uid("ref_")
         }
 
         purchase = _create_purchase(user, "DATA", amount_kobo, payload)
@@ -574,8 +562,8 @@ def register_service_routes(bp):
             # For now, we assume selling at face value
             amount_kobo = naira_to_kobo(float(amount))
 
-        # Map network to ID
-        net_map = {"mtn": 1, "glo": 2, "9mobile": 3, "airtel": 4}
+        # Bilalsadasub Network IDs: MTN=1, AIRTEL=2, GLO=3, 9MOBILE=4
+        net_map = {"mtn": 1, "airtel": 2, "glo": 3, "9mobile": 4}
         try:
             net_id = int(network)
         except (ValueError, TypeError):
@@ -584,9 +572,9 @@ def register_service_routes(bp):
         payload = {
             "network": net_id,
             "amount": int(float(amount)),
-            "mobile_number": phone,
-            "Ported_number": True,
-            "airtime_type": "VTU"
+            "phone": phone,
+            "plan_type": "VTU",
+            "request-id": uid("ref_")
         }
 
         purchase = _create_purchase(user, "AIRTIME", amount_kobo, payload)
@@ -659,7 +647,13 @@ def register_service_routes(bp):
             db.session.commit()
             return err
 
-        status, body = generate_airtime_pin(**payload)
+        # Map keys for Bilalsadasub Recharge Card API
+        status, body = generate_airtime_pin(
+            network=int(network),
+            plan_type=int(network_amount), # Usually maps to plan_type/amount ID
+            quantity=int(quantity),
+            card_name=name_on_card
+        )
         parsed_body = _safe_json(body)
         purchase.response_payload = body
 

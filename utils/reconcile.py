@@ -1,11 +1,17 @@
 import json
 from models import db, ServicePurchase
-from utils.datastation import (
-    get_data_transaction,
-    get_airtime_topup,
-    get_bill_payment,
-    get_cable_subscription
+from utils.bilalsadasub import (
+    list_data_transactions
 )
+
+# Bilal doesn't have a direct "get by ID" GET endpoint shown in the doc 
+# for everything, but we can search in lists if needed.
+# For now, we stub these to avoid import errors.
+
+def get_data_transaction(tid): return 404, "Not Implemented"
+def get_airtime_topup(tid): return 404, "Not Implemented"
+def get_bill_payment(tid): return 404, "Not Implemented"
+def get_cable_subscription(tid): return 404, "Not Implemented"
 
 SERVICE_QUERY_MAP = {
     "DATA": get_data_transaction,

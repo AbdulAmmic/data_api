@@ -39,11 +39,15 @@ def create_app():
     app.config["PAYSTACK_PUBLIC_KEY"] = os.getenv("PAYSTACK_PUBLIC_KEY", "")
     app.config["PAYSTACK_CALLBACK_URL"] = os.getenv("PAYSTACK_CALLBACK_URL", "")
 
-    # Datastation
-    app.config["DATASTATION_TOKEN"] = os.getenv("DATASTATION_TOKEN", "")
-    app.config["DATASTATION_BASE_URL"] = os.getenv(
-        "DATASTATION_BASE_URL", "https://datastation.com.ng"
+    # Bilalsadasub (Replacing Datastation)
+    app.config["BILALSADASUB_TOKEN"] = os.getenv("BILALSADASUB_TOKEN", os.getenv("DATASTATION_TOKEN", ""))
+    app.config["BILALSADASUB_BASE_URL"] = os.getenv(
+        "BILALSADASUB_BASE_URL", os.getenv("DATASTATION_BASE_URL", "https://bilalsadasub.com")
     )
+    
+    # Keep Datastation keys as aliases for backward compatibility (points to Bilalsadasub)
+    app.config["DATASTATION_TOKEN"] = app.config["BILALSADASUB_TOKEN"]
+    app.config["DATASTATION_BASE_URL"] = app.config["BILALSADASUB_BASE_URL"]
 
     # Gafiapay
     app.config["GAFIAPAY_API_KEY"] = os.getenv("GAFIAPAY_API_KEY", "")

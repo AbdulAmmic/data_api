@@ -4,16 +4,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TOKEN = os.getenv("DATASTATION_TOKEN") # "Token xxxxx"
+TOKEN = os.getenv("BILALSADASUB_TOKEN") or os.getenv("DATASTATION_TOKEN") # "Token xxxxx"
 # Ensure we don't double prefix
-if not TOKEN.startswith("Token "):
+if TOKEN and not TOKEN.startswith("Token "):
     AUTH_HEADER = f"Token {TOKEN}"
 else:
-    AUTH_HEADER = TOKEN
+    AUTH_HEADER = TOKEN or ""
 
 BASE_URLS = [
-    "https://datastationapi.com/api",
-    "https://datastation.com.ng/api"
+    "https://bilalsadasub.com/api"
 ]
 
 def probe():
@@ -27,9 +26,9 @@ def probe():
         }
         
         # 1. Check User
-        print(" [GET] /user/")
+        print(" [GET] /user")
         try:
-            res = requests.get(f"{base}/user/", headers=headers, timeout=10)
+            res = requests.get(f"{base}/user", headers=headers, timeout=10)
             print(f" Status: {res.status_code}")
             if res.status_code == 200:
                 print(f" Body: {res.text[:500]}")
@@ -39,9 +38,9 @@ def probe():
             print(f" Request Exception: {e}")
 
         # 2. Check Data
-        print(" [GET] /data/")
+        print(" [GET] /data")
         try:
-            res = requests.get(f"{base}/data/", headers=headers, timeout=10)
+            res = requests.get(f"{base}/data", headers=headers, timeout=10)
             print(f" Status: {res.status_code}")
             if res.status_code == 200:
                 print(f" Body: {res.text[:500]}")

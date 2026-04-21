@@ -1,0 +1,3 @@
+=== DUPLICATE PLANS (same network + size + validity) ===
+
+No duplicates found.

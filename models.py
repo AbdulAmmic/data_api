@@ -140,11 +140,15 @@ class PriceItem(db.Model):
 
     provider_code = db.Column(db.String(50), nullable=True)
     # Examples:
-    # DATA: "mtn_1gb"
+    # DATA: "1" (Bilal ID)
     # AIRTIME: "mtn"
-    # ELECTRICITY: "ikeja-prepaid"
-    # CABLE: "dstv-compact"
-    # EPIN: "waec"
+    # ELECTRICITY: "1"
+    # CABLE: "1"
+
+    name = db.Column(db.String(120), nullable=True)
+    network = db.Column(db.String(20), nullable=True) # mtn, glo, etc
+    plan_type = db.Column(db.String(40), nullable=True) # sme, gifting, prepaid
+    validity = db.Column(db.String(40), nullable=True) 
 
     provider_cost_kobo = db.Column(db.BigInteger, nullable=False)
     markup_type = db.Column(db.String(10), default="FLAT")  # FLAT | PERCENT
