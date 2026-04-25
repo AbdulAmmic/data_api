@@ -368,8 +368,12 @@ def register_service_routes(bp):
         amount_kobo = plan_item.selling_price_kobo()
         amount_naira = amount_kobo / 100
 
+        # Bilal Cable IDs: GOTV=1, DSTV=2, STARTIMES=3
+        cable_map = {"gotv": 1, "dstv": 2, "startimes": 3}
+        cable_id = cable_map.get(str(plan_item.network).lower(), 1)
+
         payload = {
-            "cable": int(plan_item.network) if str(plan_item.network).isdigit() else 1, # ID was saved in network field for Cable
+            "cable": cable_id,
             "cable_plan": int(plan_item.provider_code), # Bilal Plan ID
             "iuc": iuc,
             "request-id": uid("ref_")
@@ -464,14 +468,18 @@ def register_service_routes(bp):
         data = request.get_json(force=True)
 
         network = data.get("network") # e.g. "mtn"
-        plan_id = data.get("plan")    # e.g. "sme-1gb" (frontend strips 'mtn-')
+        plan_id = data.get("plan")    # e.g. "sme-data-1-xxx" (frontend strips 'mtn-')
         phone = data.get("phone")
 
         if not network or not plan_id or not phone:
             return error_response("network, plan, phone required")
 
-        # plan_id is now the DB ID from PriceItem
+        # Try searching by exact ID, if not found, try prepending network
         plan_item = get_price_item(plan_id)
+        if not plan_item:
+            alt_id = f"{network.lower()}-{plan_id}"
+            plan_item = get_price_item(alt_id)
+            
         if not plan_item:
              return error_response(f"Data plan not found: {plan_id}", 400)
 
