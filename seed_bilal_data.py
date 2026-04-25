@@ -14,31 +14,41 @@ def parse_bilal_doc():
         lines = f.readlines()
 
     items = []
+    
+    # Identify indices of key sections
+    data_index = -1
+    cable_index = -1
+    rc_index = -1
+    exam_index = -1
+    
+    for i, line in enumerate(lines):
+        if "Data Plans" in line: data_index = i
+        elif "Cable Plans" in line: cable_index = i
+        elif "Recharge Card Plans" in line: rc_index = i
+        elif "Exam/Education Pin" in line: exam_index = i
 
     # --- PARSE DATA PLANS ---
-    # Look for "Data Plans" section
-    data_index = -1
-    for i, line in enumerate(lines):
-        if "Data Plans" in line:
-            data_index = i
-            break
-    
     if data_index != -1:
-        # Range until "PURCHASE PRODUCT" or similar
-        for i in range(data_index + 1, len(lines), 2):
-            line_id = lines[i].strip()
-            if not line_id.isdigit(): break
+        current_i = data_index + 1
+        while current_i < len(lines):
+            line_id = lines[current_i].strip()
+            # If we hit another major section, stop parsing data
+            if any(h in line_id for h in ["Cable Plans", "Recharge Card Plans", "PURCHASE PRODUCT"]):
+                if current_i > data_index + 5: break
+                
+            if not line_id.isdigit():
+                current_i += 1; continue
             
-            line_data = lines[i+1].strip()
-            # Split by tabs or multiple spaces
+            if current_i + 1 >= len(lines): break
+            line_data = lines[current_i+1].strip()
             parts = re.split(r'\t| {2,}', line_data)
+            
             if len(parts) >= 4:
                 network = parts[0].strip().lower()
                 p_type = parts[1].strip().lower()
                 size = parts[2].strip()
                 price_str = parts[3].strip().replace('₦', '').replace(',', '')
                 validity = parts[4].strip() if len(parts) > 4 else "30 days"
-                
                 try:
                     price = float(price_str)
                 except:
@@ -55,27 +65,27 @@ def parse_bilal_doc():
                     "markup_type": "PERCENT",
                     "markup_value": 5.0
                 })
+            current_i += 2
 
     # --- PARSE CABLE PLANS ---
-    cable_index = -1
-    for i, line in enumerate(lines):
-        if "Cable Plans" in line:
-            cable_index = i
-            break
-    
     if cable_index != -1:
-        for i in range(cable_index + 1, len(lines), 2):
-            line_id = lines[i].strip()
-            if not line_id.isdigit(): break
+        current_i = cable_index + 1
+        while current_i < len(lines):
+            line_id = lines[current_i].strip()
+            if any(h in line_id for h in ["Recharge Card Plans", "Exam/Education Pin", "PURCHASE PRODUCT"]):
+                if current_i > cable_index + 5: break
+
+            if not line_id.isdigit():
+                current_i += 1; continue
             
-            line_data = lines[i+1].strip()
+            if current_i + 1 >= len(lines): break
+            line_data = lines[current_i+1].strip()
             parts = re.split(r'\t| {2,}', line_data)
+            
             if len(parts) >= 3:
-                # Format: DSTV | DStv Padi | ₦4400
                 network = parts[0].strip().lower()
                 name = parts[1].strip()
                 price_str = parts[2].strip().replace('₦', '').replace(',', '')
-                
                 try:
                     price = float(price_str)
                 except:
@@ -90,8 +100,9 @@ def parse_bilal_doc():
                     "validity": "Monthly",
                     "cost": price,
                     "markup_type": "FLAT",
-                    "markup_value": 0.0 # User only specified 5% for data
+                    "markup_value": 0.0
                 })
+            current_i += 2
 
     # --- PARSE RECHARGE CARD PLANS ---
     rc_index = -1
@@ -129,6 +140,41 @@ def parse_bilal_doc():
                     "markup_type": "FLAT",
                     "markup_value": 0.0
                 })
+
+    # --- PARSE EXAM PINS ---
+    if exam_index != -1:
+        current_i = exam_index + 1
+        while current_i < len(lines):
+            line_id = lines[current_i].strip()
+            if "PURCHASE PRODUCT" in line_id and current_i > exam_index + 2: break
+
+            if not line_id.isdigit():
+                current_i += 1; continue
+            
+            if current_i + 1 >= len(lines): break
+            line_data = lines[current_i+1].strip()
+            parts = re.split(r'\t| {2,}', line_data)
+            
+            if len(parts) >= 2:
+                name = parts[0].strip()
+                price_str = parts[1].strip().replace('₦', '').replace(',', '')
+                try:
+                    price = float(price_str)
+                except:
+                    price = 0.0
+
+                items.append({
+                    "service": "EPIN",
+                    "provider_code": line_id,
+                    "name": name,
+                    "network": "education",
+                    "plan_type": "exam",
+                    "validity": "Lifetime",
+                    "cost": price,
+                    "markup_type": "FLAT",
+                    "markup_value": 0.0
+                })
+            current_i += 2
 
     # --- PARSE ELECTRICITY ---
     disco_index = -1
@@ -201,8 +247,8 @@ def seed():
         return
 
     with app.app_context():
-        print(f"Parsed {len(plans)} plans. Cleaning old DATA/CABLE/AIRTIME_PIN items...")
-        PriceItem.query.filter(PriceItem.service.in_(["DATA", "CABLE", "AIRTIME_PIN"])).delete()
+        print(f"Parsed {len(plans)} plans. Cleaning old items...")
+        PriceItem.query.filter(PriceItem.service.in_(["DATA", "CABLE", "AIRTIME_PIN", "AIRTIME"])).delete()
         
         for p in plans:
             # Generate ID that frontend can filter (starts with network)

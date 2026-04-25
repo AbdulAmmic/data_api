@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TOKEN = os.getenv("BILALSADASUB_TOKEN") or os.getenv("DATASTATION_TOKEN") # "Token xxxxx"
+TOKEN = os.getenv("BILALSADASUB_TOKEN") or "ef993044f4599b78b841ea23764f4303361bf967"
 # Ensure we don't double prefix
 if TOKEN and not TOKEN.startswith("Token "):
     AUTH_HEADER = f"Token {TOKEN}"

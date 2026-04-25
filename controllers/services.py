@@ -41,7 +41,7 @@ def register_service_routes(bp):
             amount_kobo=amount_kobo,
             status="SUCCESS",
             narration=narration,
-            provider="DATASTATION",
+            provider="BILALSADASUB",
             reference=uid("ds_")
         )
         db.session.add(tx)
@@ -70,7 +70,7 @@ def register_service_routes(bp):
             service=service,
             amount_kobo=amount_kobo,
             status="PENDING",
-            provider="DATASTATION",
+            provider="BILALSADASUB",
             request_payload=json.dumps(payload)
         )
         db.session.add(purchase)

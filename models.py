@@ -71,7 +71,7 @@ class WalletTransaction(db.Model):
     narration = db.Column(db.String(255), nullable=True)
 
     # funding / external references
-    provider = db.Column(db.String(30), nullable=True)  # PAYSTACK / DATASTATION
+    provider = db.Column(db.String(30), nullable=True)  # PAYSTACK / BILALSADASUB
     reference = db.Column(db.String(120), unique=True, nullable=True, index=True)
 
     raw_response = db.Column(db.Text, nullable=True)
@@ -85,7 +85,7 @@ class ServicePurchase(db.Model):
     service = db.Column(db.String(40), nullable=False)  # METER_VALIDATE / AIRTIME_PIN / EPIN
     amount_kobo = db.Column(db.BigInteger, nullable=False)
     status = db.Column(db.String(20), default="PENDING")  # PENDING / SUCCESS / FAILED
-    provider = db.Column(db.String(30), default="DATASTATION")
+    provider = db.Column(db.String(30), default="BILALSADASUB")
 
     request_payload = db.Column(db.Text, nullable=True)
     response_payload = db.Column(db.Text, nullable=True)
