@@ -13,7 +13,9 @@ with app.app_context():
         print("WARNING: No data plans found!")
     
     # Print sample data plan
-    sample = PriceItem.query.filter_by(service="DATA").first()
+    sample = PriceItem.query.filter(PriceItem.service == "DATA", PriceItem.id.contains("sme")).first()
     if sample:
-        print(f"Sample ID: {sample.id}")
+        print(f"Sample SME ID: {sample.id}")
         print(f"Sample Name: {sample.name}")
+    else:
+        print("WARNING: No SME IDs found!")

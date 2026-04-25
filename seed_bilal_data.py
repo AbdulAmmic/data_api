@@ -251,9 +251,9 @@ def seed():
         PriceItem.query.filter(PriceItem.service.in_(["DATA", "CABLE", "AIRTIME_PIN", "AIRTIME"])).delete()
         
         for p in plans:
-            # Generate ID that frontend can filter (starts with network)
-            # Format: network-service-providercode-shortuuid
-            item_id = f"{p['network']}-{p['service'].lower()}-{p['provider_code']}-{uid()[-6:]}"
+            # Generate ID that frontend can filter (starts with network and includes plan type)
+            # Format: network-plantype-service-providercode-shortuuid
+            item_id = f"{p['network']}-{p['plan_type'].lower()}-{p['service'].lower()}-{p['provider_code']}-{uid()[-6:]}"
             
             item = PriceItem(
                 id=item_id,
