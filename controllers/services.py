@@ -509,7 +509,10 @@ def register_service_routes(bp):
         parsed_body = _safe_json(body)
         purchase.response_payload = body
 
-        if status not in (200, 201):
+        # Check for HTTP errors or logical errors in the JSON response
+        is_success = (status in (200, 201)) and (str(parsed_body.get("status", "")).lower() == "success")
+
+        if not is_success:
             purchase.status = "FAILED"
             db.session.commit()
             _refund_wallet(user, amount_kobo, "Refund: Data failed")
@@ -589,7 +592,10 @@ def register_service_routes(bp):
         parsed_body = _safe_json(body)
         purchase.response_payload = body
 
-        if status not in (200, 201):
+        # Check for HTTP errors or logical errors in the JSON response
+        is_success = (status in (200, 201)) and (str(parsed_body.get("status", "")).lower() == "success")
+
+        if not is_success:
             purchase.status = "FAILED"
             db.session.commit()
             _refund_wallet(user, amount_kobo, "Refund: Airtime failed")
