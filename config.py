@@ -50,6 +50,12 @@ class Config:
     WALLET_PREFIX = "101"  # Used to generate unique account numbers (e.g., 10100001)
 
     # -----------------------------
+    # BILALSADASUB CONFIG
+    # -----------------------------
+    BILALSADASUB_TOKEN = os.getenv("BILALSADASUB_TOKEN")
+    BILALSADASUB_BASE_URL = os.getenv("BILALSADASUB_BASE_URL", "https://bilalsadasub.com")
+
+    # -----------------------------
     # APP MODES
     # -----------------------------
     DEBUG = os.getenv("DEBUG", "True").lower() == "true"

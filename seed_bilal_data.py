@@ -48,7 +48,7 @@ def parse_bilal_doc(doc_path="bilalapidoc.txt"):
                     })
                     continue
 
-        # 2. CABLE PLANS (e.g., DSTV DStv Padi ₦4400)
+        # 2. CABLE PLANS
         if any(cab in line_data.upper() for cab in ["DSTV", "GOTV", "STARTIME", "SHOWMAX"]):
             price_match = re.search(r'[₦N]([\d,.]+)', line_data)
             if price_match:
@@ -68,21 +68,14 @@ def parse_bilal_doc(doc_path="bilalapidoc.txt"):
                     })
                     continue
 
-        # 3. ELECTRICITY (Ikeja Electricity 1)
-        if "Electricity" in line_data:
-            # Format: 'Ikeja Electricity', next line is ID
-            name = line_data.strip()
-            # The ID is actually on current line if it was digit, but line_data is the name?
-            # Wait, doc says: 'Ikeja Electricity' (line 349), '1' (line 350)
-            # My current logic: if line_id (348) is digit? No, 348 is 'Disco ID'.
-            pass
-
-    # Special handling for Electricity and EPIN (sections)
+    # Special sections
     elec_index = -1
     epin_index = -1
+    pin_index = -1
     for i, line in enumerate(lines):
         if "Disco ID" in line: elec_index = i
         elif "Exam ID" in line: epin_index = i
+        elif "Recharge Card Plans" in line: pin_index = i
 
     if elec_index != -1:
         for i in range(elec_index + 1, len(lines), 2):
@@ -100,7 +93,6 @@ def parse_bilal_doc(doc_path="bilalapidoc.txt"):
         for i in range(epin_index + 1, len(lines), 2):
             if i+1 >= len(lines): break
             name = lines[i].strip()
-            # NECO\n2	₦2,120.00
             details = lines[i+1].strip()
             parts = details.split()
             if not parts[0].isdigit(): break
@@ -108,6 +100,20 @@ def parse_bilal_doc(doc_path="bilalapidoc.txt"):
             items.append({
                 "service": "EPIN", "provider_code": parts[0], "name": f"{name} PIN",
                 "network": "education", "plan_type": "exam", "validity": "Lifetime",
+                "cost": float(price_str or 0), "markup_type": "FLAT", "markup_value": 0.0
+            })
+
+    if pin_index != -1:
+        for i in range(pin_index + 1, len(lines), 2):
+            if i+1 >= len(lines): break
+            code = lines[i].strip()
+            if not code.isdigit(): break
+            details = lines[i+1].strip()
+            parts = details.split()
+            price_str = parts[-1].replace('₦', '').replace(',', '')
+            items.append({
+                "service": "AIRTIME_PIN", "provider_code": code, "name": f"{parts[0]} {parts[1]} PIN",
+                "network": parts[0].lower(), "plan_type": "recharge", "validity": "N/A",
                 "cost": float(price_str or 0), "markup_type": "FLAT", "markup_value": 0.0
             })
 
@@ -127,16 +133,18 @@ def seed():
                 seen.add(key)
                 unique_plans.append(p)
         
-        print(f"Total unique plans to seed: {len(unique_plans)}")
-        PriceItem.query.delete() # Full reset
+        print(f"Total unique plans from docs: {len(unique_plans)}")
         
-        # Airtime Template
+        PriceItem.query.delete() # Reset
+        
+        # Standard Airtime
         for net_name, net_id in [("mtn", 1), ("airtel", 2), ("glo", 3), ("9mobile", 4)]:
-            unique_plans.append({
-                "service": "AIRTIME", "provider_code": str(net_id), "name": f"{net_name.upper()} Airtime",
-                "network": net_name, "plan_type": "vtu", "validity": "N/A", "cost": 0.0,
-                "markup_type": "PERCENT", "markup_value": 0.0
-            })
+            item = PriceItem(
+                id=f"{net_name}-airtime-{uid()[-6:]}", service="AIRTIME", provider_code=str(net_id),
+                name=f"{net_name.upper()} Airtime", network=net_name, plan_type="vtu",
+                validity="N/A", provider_cost_kobo=0, markup_type="PERCENT", markup_value=0.0, is_active=True
+            )
+            db.session.add(item)
 
         for p in unique_plans:
             item_id = f"{p['network']}-{p['plan_type'].lower()}-{p['service'].lower()}-{p['provider_code']}-{uid()[-6:]}"
@@ -147,8 +155,9 @@ def seed():
                 markup_type=p["markup_type"], markup_value=float(p["markup_value"]), is_active=True
             )
             db.session.add(item)
+        
         db.session.commit()
-        print(f"Successfully seeded {len(unique_plans)} items.")
+        print("Successfully seeded all items.")
 
 if __name__ == "__main__":
     seed()

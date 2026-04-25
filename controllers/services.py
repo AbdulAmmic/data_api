@@ -132,13 +132,14 @@ def register_service_routes(bp):
         elif service_type == "CABLE":
             plans = PriceItem.query.filter_by(service="CABLE", is_active=True).all()
             data = []
+            cable_map = {"gotv": "1", "dstv": "2", "startimes": "3"}
             for p in plans:
                 data.append({
                     "id": p.id,
                     "service": "CABLE",
                     "amount": p.selling_price_kobo() / 100,
                     "name": p.name,
-                    "cable_provider": p.network # We stored cable type in network field
+                    "cable_provider": cable_map.get(str(p.network).lower(), "1")
                 })
             return success_response(data)
 
@@ -181,9 +182,9 @@ def register_service_routes(bp):
         if not meter or not disco:
             return error_response("meternumber, disconame, mtype required")
         
-        # Resolve disco if it's our config ID
-        disco_conf = get_disco(disco)
-        provider_disco_id = disco_conf["disco_id"] if disco_conf else disco # Fallback or strict?
+        # Resolve disco if it's our DB ID
+        plan_item = get_price_item(disco)
+        provider_disco_id = plan_item.provider_code if plan_item else disco
 
         status, body = validate_meter(meter, provider_disco_id, mtype or "prepaid")
         parsed_body = _safe_json(body)
@@ -196,18 +197,19 @@ def register_service_routes(bp):
     @auth_required
     def validate_iuc_route():
         iuc = request.args.get("smart_card_number")
-        cable = request.args.get("cablename") # e.g. 'gotv' or ID '1'
+        cable = request.args.get("cablename") # e.g. 'gotv-package-id'
 
         if not iuc or not cable:
             return error_response("smart_card_number, cablename required")
 
-        # Map cable name/id if necessary. DataStation expects ID: 1, 2, 3?
-        # If frontend sends 'gotv', we map to 1? 
-        # For now assume frontend validates/sends correct ID or we map simplistic
-        if cable.lower() == "gotv": cable_id = "1"
-        elif cable.lower() == "dstv": cable_id = "2"
-        elif cable.lower() == "startimes": cable_id = "3"
-        else: cable_id = cable
+        # Resolve cable from DB
+        plan_item = get_price_item(cable)
+        if plan_item:
+            # Map cable name to Bilal ID
+            cable_map = {"gotv": 1, "dstv": 2, "startimes": 3}
+            cable_id = cable_map.get(str(plan_item.network).lower(), 1)
+        else:
+            cable_id = 1
 
         status, body = validate_iuc(iuc, cable_id)
         parsed_body = _safe_json(body)
@@ -272,7 +274,8 @@ def register_service_routes(bp):
             purchase.status = "FAILED"
             db.session.commit()
             _refund_wallet(user, amount_kobo, "Refund: Airtime failed")
-            return error_response("Airtime failed", 502, {"provider": parsed_body})
+            p_msg = parsed_body.get("response") or parsed_body.get("message") or "Airtime failed"
+            return error_response(p_msg, 502, {"provider": parsed_body})
 
         purchase.status = "SUCCESS"
         db.session.commit()
@@ -332,7 +335,8 @@ def register_service_routes(bp):
         if status not in (200, 201):
              purchase.status = "FAILED"; db.session.commit()
              _refund_wallet(user, amount_kobo, "Refund: Electricity failed")
-             return error_response("Payment failed", 502, {"provider": parsed_body})
+             p_msg = parsed_body.get("response") or parsed_body.get("message") or "Payment failed"
+             return error_response(p_msg, 502, {"provider": parsed_body})
 
         purchase.status = "SUCCESS"; db.session.commit()
         return success_response({
@@ -391,7 +395,8 @@ def register_service_routes(bp):
         if status not in (200, 201):
              purchase.status = "FAILED"; db.session.commit()
              _refund_wallet(user, amount_kobo, "Refund: Cable failed")
-             return error_response("Subscription failed", 502, {"provider": parsed_body})
+             p_msg = parsed_body.get("response") or parsed_body.get("message") or "Subscription failed"
+             return error_response(p_msg, 502, {"provider": parsed_body})
 
         purchase.status = "SUCCESS"; db.session.commit()
         return success_response({
@@ -450,7 +455,8 @@ def register_service_routes(bp):
         if status not in (200, 201):
              purchase.status = "FAILED"; db.session.commit()
              _refund_wallet(user, amount_kobo, "Refund: PIN Generation failed")
-             return error_response("PIN Generation failed", 502, {"provider": parsed_body})
+             p_msg = parsed_body.get("response") or parsed_body.get("message") or "PIN Generation failed"
+             return error_response(p_msg, 502, {"provider": parsed_body})
         
         purchase.status = "SUCCESS"; db.session.commit()
         return success_response({
@@ -524,7 +530,8 @@ def register_service_routes(bp):
             purchase.status = "FAILED"
             db.session.commit()
             _refund_wallet(user, amount_kobo, "Refund: Data failed")
-            return error_response("Data purchase failed", 502, {"provider": parsed_body})
+            p_msg = parsed_body.get("response") or parsed_body.get("message") or "Purchase failed"
+            return error_response(p_msg, 502, {"provider": parsed_body})
 
         purchase.status = "SUCCESS"
         db.session.commit()
@@ -558,9 +565,9 @@ def register_service_routes(bp):
         provider_code = f"{network}_{amount}"
         price = get_price_or_fail("AIRTIME", provider_code)
         
-        # Fallback to generic network pricing
+        # Fallback to network-based plan
         if not price:
-            price = get_price_or_fail("AIRTIME", network)
+            price = PriceItem.query.filter_by(service="AIRTIME", network=network, is_active=True).first()
 
         if not price:
             return error_response(f"Airtime for {network} not available", 400)
@@ -665,7 +672,7 @@ def register_service_routes(bp):
         # Map keys for Bilalsadasub Recharge Card API
         status, body = generate_airtime_pin(
             network=int(network),
-            plan_type=int(network_amount), # Usually maps to plan_type/amount ID
+            plan_type=int(price.provider_code), # Use the specific Bilal Plan ID
             quantity=int(quantity),
             card_name=name_on_card
         )

@@ -7,12 +7,8 @@ def _headers():
     """
     token = (current_app.config.get("BILALSADASUB_TOKEN") or "").strip()
     
-    # Fallback/Hotfix: Use the specific token provided if env is missing or default
-    if not token or len(token) < 10:
-        token = "ef993044f4599b78b841ea23764f4303361bf967"
-
     # Ensure prefix
-    if not token.startswith("Token "):
+    if token and not token.startswith("Token "):
         token = f"Token {token}"
 
     return {
