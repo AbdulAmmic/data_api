@@ -15,6 +15,7 @@ from utils.bilalsadasub import (
     generate_airtime_pin,
     generate_epin
 )
+from plans.electricity_plans import get_disco
 
 # ---------------------------------------------------------
 # SERVICE ROUTES (WALLET-BASED + SERVER PRICING)
@@ -484,14 +485,14 @@ def register_service_routes(bp):
 
         # Bilalsadasub Network IDs: MTN=1, AIRTEL=2, GLO=3, 9MOBILE=4
         net_map = {"mtn": 1, "airtel": 2, "glo": 3, "9mobile": 4}
-        try:
-            net_id = int(plan_config["datastation_network_id"])
-        except (ValueError, TypeError):
-            net_id = net_map.get(str(network).lower(), 1)
+        
+        # Determine network ID from plan_item or fallback to request param
+        target_network = (plan_item.network or network).lower()
+        net_id = net_map.get(target_network, 1)
 
         payload = {
-            "network": net_id, # Send mapped ID
-            "data_plan": int(plan_config["datastation_plan_id"]),      # Send mapped ID
+            "network": net_id,
+            "data_plan": int(plan_item.provider_code), # Bilal Plan ID
             "phone": phone,
             "bypass": False,
             "request-id": uid("ref_")

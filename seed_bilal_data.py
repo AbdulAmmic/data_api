@@ -205,8 +205,12 @@ def seed():
         PriceItem.query.filter(PriceItem.service.in_(["DATA", "CABLE", "AIRTIME_PIN"])).delete()
         
         for p in plans:
+            # Generate ID that frontend can filter (starts with network)
+            # Format: network-service-providercode-shortuuid
+            item_id = f"{p['network']}-{p['service'].lower()}-{p['provider_code']}-{uid()[-6:]}"
+            
             item = PriceItem(
-                id=uid("prc_"),
+                id=item_id,
                 service=p["service"],
                 provider_code=p["provider_code"],
                 name=p["name"],
@@ -224,8 +228,9 @@ def seed():
         existing_airtime = PriceItem.query.filter_by(service="AIRTIME").all()
         if not existing_airtime:
             for net in ["mtn", "glo", "airtel", "9mobile"]:
+                item_id = f"{net}-airtime-{uid()[-6:]}"
                 db.session.add(PriceItem(
-                    id=uid("prc_"),
+                    id=item_id,
                     service="AIRTIME",
                     provider_code=net,
                     name=f"{net.upper()} Airtime",

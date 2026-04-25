@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 from models import db
 from controllers.routes import register_routes
+from utils.responses import error_response
 
 load_dotenv()
 
@@ -73,6 +74,15 @@ def create_app():
     def health():
         routes = [str(p) for p in app.url_map.iter_rules()]
         return {"ok": True, "service": "vtu-wallet-api", "routes": routes}
+
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        """Global error handler to ensure JSON is always returned."""
+        # Optional: app.logger.error(f"Server Error: {str(e)}")
+        message = str(e)
+        # Avoid leaking too much info in production if you want, 
+        # but for debugging 'invalid json' it's better to see the error.
+        return error_response(f"Internal Server Error: {message}", 500)
 
     return app
 
