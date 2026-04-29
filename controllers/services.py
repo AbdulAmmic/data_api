@@ -257,6 +257,7 @@ def register_service_routes(bp):
             "amount": int(float(amount)),
             "phone": phone,
             "plan_type": "VTU",
+            "bypass": False,
             "request-id": uid("ref_")
         }
 
@@ -270,11 +271,20 @@ def register_service_routes(bp):
         status, body = buy_airtime_topup(payload)
         parsed_body = _safe_json(body)
         purchase.response_payload = body # Store raw for history
-        if status not in (200, 201):
+
+        # Check both HTTP status AND the provider's logical status field
+        is_success = (status in (200, 201)) and (str(parsed_body.get("status", "")).lower() == "success")
+
+        if not is_success:
             purchase.status = "FAILED"
             db.session.commit()
             _refund_wallet(user, amount_kobo, "Refund: Airtime failed")
-            p_msg = parsed_body.get("response") or parsed_body.get("message") or "Airtime failed"
+            p_msg = (
+                parsed_body.get("response")
+                or parsed_body.get("message")
+                or parsed_body.get("detail")
+                or "Airtime purchase failed"
+            )
             return error_response(p_msg, 502, {"provider": parsed_body})
 
         purchase.status = "SUCCESS"
@@ -593,6 +603,7 @@ def register_service_routes(bp):
             "amount": int(float(amount)),
             "phone": phone,
             "plan_type": "VTU",
+            "bypass": False,
             "request-id": uid("ref_")
         }
 
@@ -607,14 +618,20 @@ def register_service_routes(bp):
         parsed_body = _safe_json(body)
         purchase.response_payload = body
 
-        # Check for HTTP errors or logical errors in the JSON response
+        # Check both HTTP status AND the provider's logical status field
         is_success = (status in (200, 201)) and (str(parsed_body.get("status", "")).lower() == "success")
 
         if not is_success:
             purchase.status = "FAILED"
             db.session.commit()
             _refund_wallet(user, amount_kobo, "Refund: Airtime failed")
-            return error_response("Airtime failed", 502, {"provider": parsed_body})
+            p_msg = (
+                parsed_body.get("response")
+                or parsed_body.get("message")
+                or parsed_body.get("detail")
+                or "Airtime topup failed"
+            )
+            return error_response(p_msg, 502, {"provider": parsed_body})
 
         purchase.status = "SUCCESS"
         db.session.commit()

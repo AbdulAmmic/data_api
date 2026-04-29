@@ -1,9 +1,10 @@
 import requests
+import base64
 from flask import current_app
 
 def _headers():
     """
-    Bilalsadasub Authorization: Token <token>
+    Bilalsadasub purchase endpoints use: Authorization: Token <token>
     """
     token = (current_app.config.get("BILALSADASUB_TOKEN") or "").strip()
     
@@ -16,12 +17,32 @@ def _headers():
         "Content-Type": "application/json",
     }
 
+def _basic_headers():
+    """
+    Bilalsadasub /api/user endpoint uses Basic auth (username:password base64).
+    Falls back to Token auth if credentials not configured.
+    """
+    username = (current_app.config.get("BILALSADASUB_USERNAME") or "").strip()
+    password = (current_app.config.get("BILALSADASUB_PASSWORD") or "").strip()
+    if username and password:
+        encoded = base64.b64encode(f"{username}:{password}".encode()).decode()
+        return {
+            "Authorization": f"Basic {encoded}",
+            "Content-Type": "application/json",
+        }
+    # Fallback to Token if no credentials configured
+    return _headers()
+
 def _base():
     return (current_app.config.get("BILALSADASUB_BASE_URL") or "https://bilalsadasub.com").rstrip("/")
 
 def get_user_details():
+    """
+    POST /api/user with Basic auth to get balance and token.
+    (GET with Token auth returns 500 on Bilalsadasub)
+    """
     url = f"{_base()}/api/user"
-    r = requests.get(url, headers=_headers(), timeout=30)
+    r = requests.post(url, headers=_basic_headers(), timeout=30)
     return r.status_code, r.text
 
 # -------------------------

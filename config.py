@@ -54,6 +54,8 @@ class Config:
     # -----------------------------
     BILALSADASUB_TOKEN = os.getenv("BILALSADASUB_TOKEN")
     BILALSADASUB_BASE_URL = os.getenv("BILALSADASUB_BASE_URL", "https://bilalsadasub.com")
+    BILALSADASUB_USERNAME = os.getenv("BILALSADASUB_USERNAME")   # For Basic auth (balance check)
+    BILALSADASUB_PASSWORD = os.getenv("BILALSADASUB_PASSWORD")   # For Basic auth (balance check)
 
     # -----------------------------
     # APP MODES
