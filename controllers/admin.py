@@ -244,3 +244,129 @@ def register_admin_routes(bp):
         db.session.commit()
         
         return success_response({"new_balance": user.wallet_balance_kobo / 100.0}, "Wallet funded")
+
+    # =====================================================
+    # AIRTIME TO CASH — ADMIN MANAGEMENT
+    # =====================================================
+    @bp.get("/airtime-cash")
+    @auth_required
+    @admin_required
+    def list_airtime_cash_requests():
+        """List all airtime-to-cash requests. Filter by status e.g. ?status=PENDING"""
+        from models import AirtimeToCashTransaction
+        status = request.args.get("status")
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 20, type=int)
+
+        q = AirtimeToCashTransaction.query
+        if status:
+            q = q.filter_by(status=status.upper())
+
+        pagination = q.order_by(AirtimeToCashTransaction.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+
+        items = []
+        for tx in pagination.items:
+            user = User.query.get(tx.user_id)
+            items.append({
+                "id": tx.id,
+                "user_id": tx.user_id,
+                "user_name": user.full_name if user else "Unknown",
+                "user_email": user.email if user else "",
+                "network": tx.network,
+                "phone_from": tx.phone_from,
+                "collection_phone": tx.collection_phone,
+                "amount_naira": tx.amount_sent,
+                "status": tx.status,
+                "admin_note": tx.admin_note,
+                "reference": tx.reference,
+                "created_at": tx.created_at.isoformat() if tx.created_at else None
+            })
+
+        return success_response({
+            "requests": items,
+            "total": pagination.total,
+            "pages": pagination.pages,
+            "current_page": page
+        })
+
+    @bp.post("/airtime-cash/<tx_id>/approve")
+    @auth_required
+    @admin_required
+    def approve_airtime_cash(tx_id):
+        """
+        Approve an airtime-to-cash request and credit the user's wallet.
+        Optionally pass a custom payout_naira in the body, otherwise
+        uses 85% of the submitted amount as the default payout rate.
+        """
+        from models import AirtimeToCashTransaction
+        from utils.helpers import uid as gen_uid
+
+        tx = AirtimeToCashTransaction.query.get(tx_id)
+        if not tx:
+            return error_response("Transaction not found", 404)
+        if tx.status != "PENDING":
+            return error_response(f"Transaction is already {tx.status}", 400)
+
+        data = request.get_json(force=True) or {}
+        note = data.get("note", "")
+
+        # Payout: admin can override, default = 85% of submitted amount
+        payout_naira = data.get("payout_naira")
+        if payout_naira:
+            payout_kobo = int(float(payout_naira) * 100)
+        else:
+            payout_kobo = int(tx.amount_kobo * 0.85)
+
+        user = User.query.get(tx.user_id)
+        if not user:
+            return error_response("User not found", 404)
+
+        # Credit wallet
+        user.wallet_balance_kobo += payout_kobo
+
+        wallet_tx = WalletTransaction(
+            id=gen_uid("tx_"),
+            user_id=user.id,
+            tx_type="CREDIT",
+            amount_kobo=payout_kobo,
+            status="SUCCESS",
+            narration=f"Airtime-to-Cash ({tx.network}) - {tx.phone_from}",
+            reference=gen_uid("a2c_payout_"),
+            provider="MANUAL"
+        )
+        db.session.add(wallet_tx)
+
+        tx.status = "APPROVED"
+        tx.admin_note = note or f"Approved. Credited NGN {payout_kobo / 100:.2f}"
+        db.session.commit()
+
+        return success_response({
+            "tx_id": tx.id,
+            "credited_naira": payout_kobo / 100,
+            "user_new_balance": user.wallet_balance_kobo / 100.0
+        }, "Airtime-to-cash approved and wallet credited")
+
+    @bp.post("/airtime-cash/<tx_id>/reject")
+    @auth_required
+    @admin_required
+    def reject_airtime_cash(tx_id):
+        """Reject an airtime-to-cash request with a reason."""
+        from models import AirtimeToCashTransaction
+
+        tx = AirtimeToCashTransaction.query.get(tx_id)
+        if not tx:
+            return error_response("Transaction not found", 404)
+        if tx.status != "PENDING":
+            return error_response(f"Transaction is already {tx.status}", 400)
+
+        data = request.get_json(force=True) or {}
+        note = data.get("note", "Rejected by admin")
+
+        tx.status = "REJECTED"
+        tx.admin_note = note
+        db.session.commit()
+
+        return success_response({"tx_id": tx.id}, "Transaction rejected")
+

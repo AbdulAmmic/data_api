@@ -45,18 +45,16 @@ class AirtimeToCashTransaction(db.Model):
     user_id = db.Column(db.String(64), db.ForeignKey("users.id"), nullable=False)
     
     network = db.Column(db.String(20), nullable=False)
-    phone_from = db.Column(db.String(20), nullable=False)
-    amount_sent = db.Column(db.BigInteger, nullable=False) # In Naira (user input) usually, or kobo? Let's use Kobo to be consistent but usually user types Naira.
-    # Let's verify usage. Input usually Naira. We store Kobo.
-    amount_kobo = db.Column(db.BigInteger, nullable=False)
+    phone_from = db.Column(db.String(20), nullable=False)       # Customer's phone number
+    collection_phone = db.Column(db.String(20), nullable=True)  # Our number they should send to
+    amount_sent = db.Column(db.BigInteger, nullable=False)       # Naira amount
+    amount_kobo = db.Column(db.BigInteger, nullable=False)       # Kobo equivalent
     
-    share_pin = db.Column(db.String(10), nullable=True) # If they share it
-    status = db.Column(db.String(20), default="PENDING") # PENDING, APPROVED, REJECTED
+    share_pin = db.Column(db.String(50), nullable=True)  # Recharge card PIN if provided
+    status = db.Column(db.String(20), default="PENDING")  # PENDING, APPROVED, REJECTED
     admin_note = db.Column(db.String(255), nullable=True)
     
-    # Cheetahpay specific
     reference = db.Column(db.String(120), unique=True, nullable=True, index=True)
-    provider_reference = db.Column(db.String(120), nullable=True)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

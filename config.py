@@ -58,6 +58,15 @@ class Config:
     BILALSADASUB_PASSWORD = os.getenv("BILALSADASUB_PASSWORD")   # For Basic auth (balance check)
 
     # -----------------------------
+    # AIRTIME TO CASH COLLECTION NUMBERS
+    # -----------------------------
+    A2C_MTN_NUMBER    = os.getenv("A2C_MTN_NUMBER", "")
+    A2C_AIRTEL_NUMBER = os.getenv("A2C_AIRTEL_NUMBER", "")
+    A2C_GLO_NUMBER    = os.getenv("A2C_GLO_NUMBER", "")
+    A2C_9MOBILE_NUMBER = os.getenv("A2C_9MOBILE_NUMBER", "")
+
+
+    # -----------------------------
     # APP MODES
     # -----------------------------
     DEBUG = os.getenv("DEBUG", "True").lower() == "true"

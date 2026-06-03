@@ -322,7 +322,15 @@ def register_service_routes(bp):
             return error_response("Invalid Disco selected", 400)
             
         amount_kobo = naira_to_kobo(float(amount))
-        amount_naira = float(amount)
+        
+        # Calculate markup
+        markup_kobo = 0
+        if plan_item.markup_type == "PERCENT":
+            markup_kobo = int(amount_kobo * plan_item.markup_value / 100)
+        else:
+            markup_kobo = int(plan_item.markup_value * 100)
+            
+        total_debit_kobo = amount_kobo + markup_kobo
 
         payload = {
             "disco": int(plan_item.provider_code), # Bilal Disco ID
@@ -332,8 +340,8 @@ def register_service_routes(bp):
             "request-id": uid("ref_")
         }
 
-        purchase = _create_purchase(user, "ELECTRICITY", amount_kobo, payload)
-        debit, err = _debit_wallet(user, amount_kobo, "Electricity Bill")
+        purchase = _create_purchase(user, "ELECTRICITY", total_debit_kobo, payload)
+        debit, err = _debit_wallet(user, total_debit_kobo, "Electricity Bill")
         if err:
             purchase.status = "FAILED"; db.session.commit(); return err
 
@@ -344,7 +352,7 @@ def register_service_routes(bp):
 
         if status not in (200, 201):
              purchase.status = "FAILED"; db.session.commit()
-             _refund_wallet(user, amount_kobo, "Refund: Electricity failed")
+             _refund_wallet(user, total_debit_kobo, "Refund: Electricity failed")
              p_msg = parsed_body.get("response") or parsed_body.get("message") or "Payment failed"
              return error_response(p_msg, 502, {"provider": parsed_body})
 
@@ -587,9 +595,13 @@ def register_service_routes(bp):
             amount_kobo = price.selling_price_kobo()
         else:
             # Dynamic amount (face value)
-            # We could implement a percentage markup/discount here if needed using price.markup_value
-            # For now, we assume selling at face value
-            amount_kobo = naira_to_kobo(float(amount))
+            base_kobo = naira_to_kobo(float(amount))
+            markup_kobo = 0
+            if price.markup_type == "PERCENT":
+                markup_kobo = int(base_kobo * price.markup_value / 100)
+            else:
+                markup_kobo = int(price.markup_value * 100)
+            amount_kobo = base_kobo + markup_kobo
 
         # Bilalsadasub Network IDs: MTN=1, AIRTEL=2, GLO=3, 9MOBILE=4
         net_map = {"mtn": 1, "airtel": 2, "glo": 3, "9mobile": 4}
@@ -714,20 +726,19 @@ def register_service_routes(bp):
 
 
     # =====================================================
-    # AIRTIME TO CASH
+    # AIRTIME TO CASH (MANUAL)
     # =====================================================
     @bp.post("/airtime/cash")
     @auth_required
     def airtime_to_cash_route():
         from models import AirtimeToCashTransaction
-        from utils.cheetahpay import CheetahPayClient
+        from flask import current_app
         user = request.user
         data = request.get_json(force=True)
 
-        network = data.get("network")
+        network    = (data.get("network") or "").lower().strip()
         phone_from = data.get("phone_from")
-        amount = data.get("amount")
-        share_pin = data.get("share_pin") # This could be the card PIN or the transfer PIN
+        amount     = data.get("amount")
         transaction_pin = data.get("transaction_pin")
 
         if not network or not phone_from or not amount:
@@ -738,63 +749,88 @@ def register_service_routes(bp):
 
         try:
             amount_naira = float(amount)
+            if amount_naira < 100:
+                return error_response("Minimum airtime-to-cash amount is NGN 100", 400)
         except:
             return error_response("Invalid amount format", 400)
 
-        tx_id = uid("a2c_")
-        
-        # Initialize Cheetahpay Client
-        client = CheetahPayClient()
-        
-        # Determine if it's a PIN or a Transfer
-        # If share_pin looks like a 10-16 digit recharge pin, we treat as PIN deposit.
-        # Otherwise, we treat it as a Transfer deposit.
-        is_pin_deposit = share_pin and len(share_pin) >= 10 and share_pin.isdigit()
-        
-        if is_pin_deposit:
-             status_code, response = client.deposit_airtime_pin(
-                 pin=share_pin,
-                 amount=amount_naira,
-                 network=network,
-                 order_id=tx_id
-             )
-        else:
-             status_code, response = client.initiate_airtime_transfer(
-                 amount=amount_naira,
-                 network=network,
-                 depositor_phone=phone_from,
-                 order_id=tx_id
-             )
+        # --- Resolve collection number from config ---
+        number_map = {
+            "mtn":     current_app.config.get("A2C_MTN_NUMBER", ""),
+            "airtel":  current_app.config.get("A2C_AIRTEL_NUMBER", ""),
+            "glo":     current_app.config.get("A2C_GLO_NUMBER", ""),
+            "9mobile": current_app.config.get("A2C_9MOBILE_NUMBER", ""),
+        }
+        collection_phone = number_map.get(network, "")
 
-        # Log Cheetahpay response
-        print(f"Cheetahpay Response ({tx_id}): {response}")
+        if not collection_phone:
+            return error_response(
+                f"Airtime-to-cash is not available for {network.upper()} at this time", 400
+            )
 
-        # Note: Even if Cheetahpay fails initially, we might want to record it
-        # or just return error to user.
-        if status_code not in [200, 201] or not response.get("success"):
-             return error_response(f"Cheetahpay Error: {response.get('message', 'Failed to initiate')}", status_code)
-
+        # --- Save transaction as PENDING ---
         tx = AirtimeToCashTransaction(
-            id=tx_id,
+            id=uid("a2c_"),
             user_id=user.id,
-            network=network,
+            network=network.upper(),
             phone_from=phone_from,
+            collection_phone=collection_phone,
             amount_sent=int(amount_naira),
             amount_kobo=naira_to_kobo(amount_naira),
-            share_pin=share_pin,
             status="PENDING",
-            provider_reference=response.get("reference") or response.get("transaction_id")
+            reference=uid("a2cref_")
         )
-        
         db.session.add(tx)
         db.session.commit()
 
         return success_response({
             "id": tx.id,
             "status": "PENDING",
-            "message": response.get("message", "Request submitted successfully. Waiting for Cheetahpay confirmation."),
-            "cheetahpay_response": response
+            "network": network.upper(),
+            "send_airtime_to": collection_phone,
+            "amount": int(amount_naira),
+            "message": (
+                f"Please send NGN {int(amount_naira)} airtime to {collection_phone} "
+                f"from {phone_from}. Your wallet will be credited after admin verification."
+            )
+        }, "Airtime-to-cash request submitted")
+
+    @bp.get("/airtime/cash")
+    @auth_required
+    def list_airtime_cash_route():
+        """User can view their own airtime-to-cash requests."""
+        from models import AirtimeToCashTransaction
+        user = request.user
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 20, type=int)
+
+        pagination = (
+            AirtimeToCashTransaction.query
+            .filter_by(user_id=user.id)
+            .order_by(AirtimeToCashTransaction.created_at.desc())
+            .paginate(page=page, per_page=per_page, error_out=False)
+        )
+
+        items = []
+        for tx in pagination.items:
+            items.append({
+                "id": tx.id,
+                "network": tx.network,
+                "phone_from": tx.phone_from,
+                "send_to": tx.collection_phone,
+                "amount_naira": tx.amount_sent,
+                "status": tx.status,
+                "admin_note": tx.admin_note,
+                "created_at": tx.created_at.isoformat() if tx.created_at else None
+            })
+
+        return success_response({
+            "requests": items,
+            "total": pagination.total,
+            "pages": pagination.pages
         })
+
+
 
     # =====================================================
     # TRANSACTION HISTORY & RECEIPT
